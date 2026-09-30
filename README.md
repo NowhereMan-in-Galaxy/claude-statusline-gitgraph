@@ -42,7 +42,7 @@ python3 gitgraph.py ~/your/project   # 画出某个仓库的分支图
 **已经有自己的状态栏脚本？** 在脚本末尾加一行，把图接在原来的内容下面：
 
 ```bash
-printf '\n%s' "$(python3 ~/tools/claude-statusline-gitgraph/gitgraph.py "$cwd")"
+printf '\n%s' "$(python3 ~/tools/claude-statusline-gitgraph/gitgraph.py --color "$cwd")"
 ```
 
 ## 看每一段做了什么：`log`
@@ -66,7 +66,7 @@ printf '\n%s' "$(python3 ~/tools/claude-statusline-gitgraph/gitgraph.py "$cwd")"
 
 ```sh
 #!/bin/sh
-exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" log "$@"
+exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" log --color "$@"
 ```
 
 之后在任何终端里输入 `gitgraph` 就能看；在 Claude Code 里输入 `! gitgraph`。
@@ -109,7 +109,7 @@ exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" log "$@"
 | `FOLD_OVER` | 4 | 一个分支连续超过几次提交就折叠 |
 | `COLORS` | — | 各部分的颜色（终端 256 色编号） |
 
-输出被其他程序接走时（比如 Claude Code 里的 `! gitgraph`）会自动去掉颜色，避免出现乱码。`--color` 强制开启颜色，`--no-color` 或环境变量 `NO_COLOR=1` 关闭颜色。
+输出被其他程序接走时（比如存进文件、交给另一个脚本）会自动去掉颜色。如果接收方能显示颜色，比如你自己的状态栏脚本，或者 Claude Code 里的 `!` 命令，就加上 `--color` 强制开启。`--no-color` 或环境变量 `NO_COLOR=1` 关闭颜色。
 
 ## 它是怎么画出来的
 
