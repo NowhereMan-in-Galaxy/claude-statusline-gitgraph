@@ -1,56 +1,59 @@
-# 它是怎么画出来的
+# How it works
 
-整个程序只有一个文件 `gitgraph.py`，分成两层来看。
+**English** · [中文](how-it-works.zh-CN.md)
 
-## 第一层：Claude Code 的状态栏
+The whole program is one file, `gitgraph.py`. It helps to look at it in two layers.
 
-Claude Code 的状态栏（statusLine）机制很简单：它定时运行你在 `settings.json` 里配置的命令，把当前会话的信息以 JSON 格式交给这个命令（从标准输入传进去），命令打印出来的文字就显示在输入框下方。
+## Layer 1: the Claude Code status line
 
-所以状态栏本质上就是**定时跑一个脚本，把脚本的输出贴上去**。`gitgraph.py --statusline` 从这段 JSON 里取出 `workspace.current_dir`，就知道该画哪个仓库了。
+Claude Code's status line is a simple mechanism. It runs the command you set in `settings.json`, passes the current session as JSON on standard input, and displays whatever the command prints under the prompt.
 
-## 第二层：画图，分四步
+So a status line is really **a script that runs on a timer, with its output pinned under the prompt**. `gitgraph.py --statusline` reads `workspace.current_dir` from that JSON to know which repository to draw.
 
-### 1. 问 git 要数据
+## Layer 2: drawing, in four steps
 
-一次 `git log --date-order --format="%H %ct %P"` 就能拿到最近的提交，以及每次提交的父提交是谁。git 的整个历史就是一张"谁是谁的父提交"的关系图，后面的计算全在这张关系图上完成，不用反复调用 git。
+### 1. Ask git for the data
 
-- **主线**：从 main 的最新提交开始，一直沿着"第一个父提交"往回走。合并时，第一个父提交就是合并前 main 所在的位置，所以这样走下来刚好就是 main 自己的那条线。
-- **已经合并的分支**：合并提交有两个父提交，第二个就是被合并进来的那条分支。从它出发往回走，碰到 main 已经有的提交就停下，停下的那个点就是分叉点。
-- **还没合并的分支**：从分支的最新提交出发往回走，碰到 main 已经有的提交就停下。如果一个分支是从另一个分支上开出来的，它会停在那个分支的提交上，所以能画出"分支上的分支"。
+One `git log --date-order --format="%H %ct %P"` returns the recent commits and each one's parents. Git's history is a graph of "who is whose parent", and everything after this point is computed on that graph in Python instead of calling git again and again.
 
-### 2. 排左右：按拓扑顺序，而不是按时间
+- **The trunk.** Start at main's tip and keep following the *first* parent. At a merge, the first parent is where main was before the merge, so this walk traces main's own line.
+- **Merged branches.** A merge commit has two parents. The second one is the branch that came in. Walk back from it until you reach a commit main already has; that commit is the fork point.
+- **Open branches.** Walk back from each branch tip until you reach a commit main already has. A branch cut from another branch stops at that branch's commits, so branches of branches draw correctly too.
 
-每个提交占一列，要保证**父提交永远在子提交的左边**。
+### 2. Columns: topological order, not timestamps
 
-直接按提交时间排序看起来最自然，但这样会出错：`rebase`、`commit --amend` 都会改写提交时间，结果可能出现"子提交排在父提交前面"的情况，线就会往回画。所以这里用的是 git 自带的 `--date-order`：它在保证"父提交在前"的前提下，再尽量按时间排序。
+Each commit gets a column, and **a parent must always be left of its children**.
 
-排好之后，同一个分支上连续超过 4 个的普通提交会折叠成 `(n)`。分叉点、合并点、分支的最新提交和 HEAD 永远不会被折叠，否则线就接不上了。
+Sorting by commit time looks natural but breaks. `rebase` and `commit --amend` rewrite timestamps, so a child can end up with an earlier time than its parent, and lines would run backwards. Instead the columns use git's own `--date-order`, which keeps parents first and sorts by time only where it's free to.
 
-### 3. 排上下：像给会议排会议室
+Then runs of more than four ordinary commits on one branch fold into `(n)`. Fork points, merges, branch tips and HEAD never fold, or the lines couldn't connect.
 
-main 固定在第一行。每个分支占据一段"从分叉到合并"的时间区间：
+### 3. Rows: like booking meeting rooms
 
-- 区间不重叠的分支可以放在同一行，就像不同时间段的会议可以共用一间会议室；
-- 还没合并的分支区间一直延伸到最右边，所以每个都会独占一行；
-- 最多画 3 行，放不下的在 main 后面显示 `+N more`。你当前所在的分支永远会被画出来。
+main is always the top row. Each branch occupies a span of time, from where it forked to where it merged.
 
-### 4. 在字符格子里画线
+- Branches whose spans don't overlap can share a row, the way meetings at different times can share a room.
+- An open branch's span runs to the right edge, so each open branch gets its own row.
+- At most three rows are drawn. The rest show up as `+N more` next to main, and the branch you're on is always drawn.
 
-想象一张方格纸，每个格子放一个字符。难点在于好几条线经过同一个格子的时候：比如一条竖线穿过另一个分支的拐角，就应该画成 `├`，而不是后画的覆盖先画的。
+### 4. Draw on a character grid
 
-这里的做法是把每个画线字符看成"它连着哪几个方向"：
+Picture graph paper with one character per cell. The hard part is several lines passing through the same cell. A vertical line crossing another branch's corner should become `├`, not whichever character was drawn last.
+
+So each box-drawing character is treated as **the set of directions it connects**:
 
 ```
-─ = 左右      │ = 上下      ╰ = 上右      ╯ = 上左
-├ = 上下右    ┴ = 上左右    ┼ = 上下左右  ……
+─ = left right   │ = up down   ╰ = up right   ╯ = up left
+├ = up down right   ┴ = up left right   ┼ = all four   …
 ```
 
-两条线落在同一格时，把它们连着的方向合在一起，再换回对应的字符。`│` 加 `╰` 就是 {上, 下, 右}，也就是 `├`。这样不管多少条线交叠，拐角都能画对。
+When two lines land in one cell, their directions are combined and turned back into a character. `│` plus `╰` is {up, down, right}, which is `├`. However many lines overlap, the corner comes out right.
 
-最后给每个格子加上终端的 ANSI 颜色码，把分支名和 `+3 −1 ✎2` 这些小标记对齐到右边的同一列，就完成了。
+Last, each cell gets an ANSI color code, and the branch names and markers like `+3 −1 ✎2` are aligned into one column on the right.
 
-## 几个小经验
+## Lessons learned
 
-- **状态栏要快**：它每隔几秒就会跑一次，所以只调用少量 git 命令，大部分计算在 Python 里完成。调用 git 时加上 `--no-optional-locks`，避免和你正在执行的 git 操作抢锁。
-- **学习模式用沙盒**：`learn` 在系统临时目录里新建一个仓库来演示，结束后自动删除，不会影响任何真实项目。提交时间用一个"假时钟"一步步往后推，这样演示出来的顺序是稳定的。
-- **终端里做不到鼠标悬停**：状态栏只是一段文字，终端不支持给某个字符挂提示框。要看某次提交的具体内容，用 `git log` 或 `tig`。
+- **The status line must be fast.** It runs every few seconds, so gitgraph makes only a handful of git calls and does the rest in Python. It also passes `--no-optional-locks` so it never fights your own git commands for a lock.
+- **The tutorial uses a sandbox.** `learn` creates a repository in a temp folder and deletes it at the end, so real projects are never touched. Commit times come from a fake clock that ticks forward, which keeps the demo's order stable.
+- **Terminals can't do hover.** A status line is plain text, and a terminal can't attach a tooltip to one character. That's why the details live in `gitgraph log` instead.
+- **Know when to color.** Colors are escape codes. They're right for a terminal, but noise in a file. gitgraph colors only when writing to a terminal, unless `--color` says the receiver can handle it.
