@@ -38,6 +38,8 @@ Read `~/.claude/settings.json` first (it may not exist yet). Copy it to `~/.clau
 
 - **`statusLine` is an inline command.** Show the user the current command and ask whether to replace it or to move it into a script file that also prints the graph.
 
+If the user wants fewer colors, or mentions color blindness, add `--theme=quiet` or `--theme=colorblind` to the command. `python3 ~/tools/claude-statusline-gitgraph/gitgraph.py themes` inside a git repository shows every theme.
+
 ## 4. Add the `gitgraph` command
 
 Create `~/.local/bin/gitgraph`:
@@ -45,8 +47,8 @@ Create `~/.local/bin/gitgraph`:
 ```sh
 #!/bin/sh
 case "$1" in
-  learn|legend|log|demo) exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" "$@" --color ;;
-  *)                     exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" log --color "$@" ;;
+  learn|legend|log|demo|themes) exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" "$@" --color ;;
+  *)                            exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" log --color "$@" ;;
 esac
 ```
 
@@ -62,7 +64,8 @@ Run `python3 ~/tools/claude-statusline-gitgraph/gitgraph.py --color` inside any 
 - `! gitgraph` shows the graph with each branch explained;
 - `! gitgraph learn` is a hands-on git tutorial for beginners;
 - `! gitgraph demo` shows a simulated team of subagents working on branches;
-- `! gitgraph legend` explains every symbol.
+- `! gitgraph legend` explains every symbol;
+- `! gitgraph themes` shows the color themes.
 
 ## Do not
 

@@ -50,6 +50,7 @@ python3 gitgraph.py ~/your/project   # the graph
 python3 gitgraph.py log              # the graph, with each branch segment explained
 python3 gitgraph.py learn            # the git tutorial (press Enter to step through)
 python3 gitgraph.py demo             # a simulated team of subagents
+python3 gitgraph.py themes           # pick a color theme
 python3 gitgraph.py legend           # what every symbol means
 ```
 
@@ -88,8 +89,8 @@ To make it a one-word command, save this as `~/.local/bin/gitgraph` and make it 
 ```sh
 #!/bin/sh
 case "$1" in
-  learn|legend|log|demo) exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" "$@" --color ;;
-  *)                     exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" log --color "$@" ;;
+  learn|legend|log|demo|themes) exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" "$@" --color ;;
+  *)                            exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" log --color "$@" ;;
 esac
 ```
 
@@ -157,9 +158,21 @@ What does a repository look like when several agents work on it at once? `demo` 
 | `MAX_COLS` | 30 | how many columns to draw (the graph's width) |
 | `MAX_ROWS` | 3 | how many branch rows under main |
 | `FOLD_OVER` | 4 | fold runs longer than this |
-| `COLORS` | — | colors, as 256-color codes |
+| `THEMES` | — | the color themes, as 256-color codes |
 
 - **Color.** When the output is captured (piped into a file or another script), color is turned off. If the receiver can show color, as your own status line script or Claude Code's `!` can, pass `--color`. `--no-color` or `NO_COLOR=1` turns it off.
+- **Theme.** Too colorful? `gitgraph themes` draws your repository in every theme. Pick one with `--theme=NAME` (add it to the status line command too), or set `GITGRAPH_THEME=NAME`.
+
+  | Theme | Look |
+  |---|---|
+  | `default` | a different color for each branch |
+  | `gold` | black and gold: every branch in shades of gold (for dark terminals) |
+  | `mint` | silver and green: a silver trunk, branches in shades of green (for dark terminals) |
+  | `quiet` | one color for all branches; only `✎` and `↑`, the things to act on, stand out |
+  | `colorblind` | Okabe-Ito colors, one color for all branches, blue/orange instead of green/red |
+
+  ![gitgraph themes](docs/themes.svg)
+
 - **Language.** The language follows `LANG`. `--en` / `--zh` switch it for one run, and `GITGRAPH_LANG=zh` sets it permanently.
 
 ## How it works
@@ -226,6 +239,7 @@ python3 gitgraph.py ~/your/project   # 画出分支图
 python3 gitgraph.py log --zh         # 分支图 + 每一段做了什么
 python3 gitgraph.py learn --zh       # git 入门教程（按回车一步步走）
 python3 gitgraph.py demo --zh        # 模拟子代理团队协作
+python3 gitgraph.py themes --zh      # 挑一个配色主题
 python3 gitgraph.py legend --zh      # 符号表
 ```
 
@@ -268,8 +282,8 @@ printf '\n%s' "$(python3 ~/tools/claude-statusline-gitgraph/gitgraph.py --color 
 ```sh
 #!/bin/sh
 case "$1" in
-  learn|legend|log|demo) exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" "$@" --color ;;
-  *)                     exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" log --color "$@" ;;
+  learn|legend|log|demo|themes) exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" "$@" --color ;;
+  *)                            exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" log --color "$@" ;;
 esac
 ```
 
@@ -340,9 +354,21 @@ esac
 | `MAX_COLS` | 30 | 最多画多少列，决定图有多宽 |
 | `MAX_ROWS` | 3 | main 下面最多画几行分支 |
 | `FOLD_OVER` | 4 | 一个分支连续超过几次提交就折叠 |
-| `COLORS` | — | 各部分的颜色（终端 256 色编号） |
+| `THEMES` | — | 各个配色主题（终端 256 色编号） |
 
 - **颜色**：输出被其他程序接走时（比如存进文件、交给另一个脚本）会自动去掉颜色。如果接收方能显示颜色，比如你自己的状态栏脚本或 Claude Code 里的 `!` 命令，就加上 `--color`。`--no-color` 或环境变量 `NO_COLOR=1` 可以关闭颜色。
+- **配色主题**：觉得颜色太花？运行 `gitgraph themes`，会用每个主题把你的仓库各画一遍。选定后在命令后加 `--theme=名字`（状态栏的命令里也加上），或者设置环境变量 `GITGRAPH_THEME=名字`。
+
+  | 主题 | 效果 |
+  |---|---|
+  | `default` 默认 | 每个分支一种颜色 |
+  | `gold` 黑金 | 所有分支都是深浅不同的金色（适合深色终端） |
+  | `mint` 银绿 | 主线银色，分支是深浅不同的绿色（适合深色终端） |
+  | `quiet` 素净 | 所有分支同一种颜色，只有需要你处理的 `✎` 和 `↑` 是醒目的橙色 |
+  | `colorblind` 色弱友好 | 用 Okabe-Ito 色盲友好配色，分支同一种颜色，用蓝/橙代替绿/红 |
+
+  ![gitgraph themes](docs/themes.svg)
+
 - **语言**：默认跟随系统的 `LANG` 设置。`--zh` / `--en` 只对这一次运行生效，设置环境变量 `GITGRAPH_LANG=zh` 则会一直用中文。
 
 ## 它是怎么画出来的
