@@ -6,6 +6,16 @@ Most status lines tell you which branch you're on. This one shows you **the shap
 
 ![gitgraph in the Claude Code status line](docs/demo.svg)
 
+## Install: one sentence to your agent
+
+Paste this into Claude Code:
+
+```text
+Install https://github.com/NowhereMan-in-Galaxy/claude-statusline-gitgraph for me by following its INSTALL.md.
+```
+
+It clones the repo, adds the graph to your status line (keeping the status line you already have), and sets up the `gitgraph` command. [INSTALL.md](INSTALL.md) is the exact list of steps it follows. Rather do it yourself? See [Quick start](#quick-start).
+
 ## Built for coding with an agent
 
 When Claude writes the code, it's easy to lose track of what happened to your repository. With the graph under the prompt, you see it as it happens:
@@ -171,6 +181,16 @@ The images in this README are generated from real `gitgraph` output by `python3 
 大多数状态栏只告诉你"现在在哪个分支"。这个状态栏画出**整段历史的形状**：一张实时更新的横向 git 分支图，就在 Claude Code 输入框下面。主线在上，分支在下，时间从左往右走。
 
 ![Claude Code 状态栏里的 gitgraph](docs/demo.svg)
+
+## 安装：对 agent 说一句话
+
+把这句话发给 Claude Code：
+
+```text
+帮我安装 https://github.com/NowhereMan-in-Galaxy/claude-statusline-gitgraph ，按仓库里 INSTALL.md 的步骤做。
+```
+
+它会下载代码、把分支图加进你的状态栏（原来的状态栏内容会保留），再装好 `gitgraph` 命令。它照着做的每一步都写在 [INSTALL.md](INSTALL.md) 里。想自己动手？看[快速开始](#快速开始)。
 
 ## 为和 Agent 一起开发而做
 
