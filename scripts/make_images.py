@@ -21,6 +21,7 @@ sys.path.insert(0, ROOT)
 import gitgraph  # noqa: E402
 
 DOCS = os.path.join(ROOT, "docs")
+os.environ["GITGRAPH_APPEARANCE"] = "dark"   # the images have a dark background
 BG, FG = "#1c1d22", "#c9ccd3"
 CW, LH = 9.4, 26                      # cell width and line height in px
 FONT = "SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace"
@@ -30,6 +31,9 @@ NODES = "●◆◉"
 
 
 # ------------------------------------------------------------ text to cells
+
+ANSI16 = ["#1c1d22", "#e06c75", "#98c379", "#e5c07b", "#61afef", "#c678dd", "#56b6c2", "#dcdfe4"]
+
 
 def c256(n):
     if n >= 232:
@@ -64,6 +68,8 @@ def cells(ansi):
                         bold = True
                     elif k == 2:
                         dim = True
+                    elif 30 <= k <= 37:
+                        fg = ANSI16[k - 30]
                     elif k == 38:
                         fg = c256(codes[i + 2])
                         i += 2
@@ -280,7 +286,7 @@ def themes_image(base):
     d.write("login.html", "<p>work in progress</p>")
     lines = []
     for name in gitgraph.THEMES:
-        gitgraph.COLORS.update(gitgraph.THEMES[name])
+        gitgraph.COLORS.update(gitgraph.palette(name))
         lines += [f"{DIM}--theme={name}{R}"] + ["  " + g for g in d.graph().split("\n")] + [""]
     gitgraph.COLORS.update(gitgraph.THEMES["default"])
     return cells("\n".join(lines[:-1]))
