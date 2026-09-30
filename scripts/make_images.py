@@ -292,6 +292,17 @@ def main():
             end = next(i for i, l in enumerate(plain) if l.startswith(("Step 8/", "第 8/")))
             window([cells("\n".join(ansi[start:end - 1]))], "gitgraph learn",
                    os.path.join(DOCS, f"learn{suffix}.svg"))
+
+            out = subprocess.run([sys.executable, os.path.join(ROOT, "gitgraph.py"), "demo",
+                                  "--no-pause", "--color", f"--{lang}"],
+                                 capture_output=True, text=True).stdout
+            plain = re.sub(r"\x1b\[[0-9;]*m", "", out).split("\n")
+            ansi = out.split("\n")
+            starts = [i for i, l in enumerate(plain) if l.startswith(("Step ", "第 "))]
+            frames = [cells("\n".join(ansi[a:b - 1]))
+                      for a, b in zip(starts, starts[1:] + [len(ansi) - 2])]
+            window(frames[2:] + [frames[-1]], "gitgraph demo",
+                   os.path.join(DOCS, f"team{suffix}.svg"), seconds=3.2)
     finally:
         shutil.rmtree(base, ignore_errors=True)
 
