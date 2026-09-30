@@ -266,6 +266,26 @@ def animation(base):
     return d, frames
 
 
+def themes_image(base):
+    """One repository drawn in every theme, stacked in one window."""
+    d = Demo(os.path.join(base, "themes"))
+    build_history(d)
+    for branch, n in (("feat/login", 3), ("feat/search", 2), ("fix/footer", 1)):
+        d.sh(f"git switch -q main && git switch -q -c {branch}")
+        for i in range(n):
+            d.commit(branch.split("/")[1] + ".html", f"feat: {branch} ({i})")
+    d.sh("git switch -q main")
+    d.commit("index.html", "fix: footer link")
+    d.sh("git switch -q feat/login")
+    d.write("login.html", "<p>work in progress</p>")
+    lines = []
+    for name in gitgraph.THEMES:
+        gitgraph.COLORS.update(gitgraph.THEMES[name])
+        lines += [f"{DIM}--theme={name}{R}"] + ["  " + g for g in d.graph().split("\n")] + [""]
+    gitgraph.COLORS.update(gitgraph.THEMES["default"])
+    return cells("\n".join(lines[:-1]))
+
+
 def head(d):
     return d.sh("git rev-parse --short HEAD", step=0)
 
@@ -277,6 +297,7 @@ def main():
     try:
         d, frames = animation(base)
         window(frames, "claude — my-site", os.path.join(DOCS, "demo.svg"))
+        window([themes_image(base)], "gitgraph themes", os.path.join(DOCS, "themes.svg"))
 
         for lang, suffix in (("en", ""), ("zh", ".zh-CN")):
             gitgraph.LANG = lang
