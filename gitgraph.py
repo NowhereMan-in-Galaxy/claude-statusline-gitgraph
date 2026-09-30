@@ -50,8 +50,12 @@ class Paint:
         return f"\033[{code}m{text}\033[0m"
 
 
-def use_color(flag_off=False):
-    return not flag_off and "NO_COLOR" not in os.environ
+def use_color(argv):
+    """Color in a real terminal and in the status line (which renders it);
+    plain text when the output is captured, e.g. by Claude Code's `!` prefix."""
+    if "--no-color" in argv or "NO_COLOR" in os.environ:
+        return False
+    return "--color" in argv or "--statusline" in argv or sys.stdout.isatty()
 
 
 # ---------------------------------------------------------------- reading git
@@ -653,7 +657,7 @@ def learn(pause=True, color=True):
 # ---------------------------------------------------------------------- cli
 
 def main(argv):
-    color = use_color("--no-color" in argv)
+    color = use_color(argv)
     args = [a for a in argv if not a.startswith("--")]
     if "-h" in argv or "--help" in argv:
         print(__doc__.strip())
