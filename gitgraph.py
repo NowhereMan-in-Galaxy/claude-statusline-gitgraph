@@ -11,6 +11,7 @@ merged, curving back in at its merge commit.
     python3 gitgraph.py legend         what every symbol means
     python3 gitgraph.py learn          a guided tour in a throwaway sandbox repository
     python3 gitgraph.py demo           a simulated team with subagents working in parallel
+    python3 gitgraph.py themes [PATH]  the graph in every color theme; pick one with --theme=NAME
 
 Only the Python standard library is used.
 """
@@ -30,16 +31,43 @@ MAX_ROWS = 3      # branch rows under the trunk
 FOLD_OVER = 4     # a run longer than this on one branch is folded into "(n)"
 HISTORY = 2000    # commits read from git log
 
-COLORS = {
-    "trunk": "38;5;75",                                         # soft blue
-    "lanes": ["38;5;176", "38;5;114", "38;5;179", "38;5;110"],  # pink, green, amber, steel
-    "head": "1;38;5;222",
-    "ahead": "38;5;114",
-    "behind": "38;5;174",
-    "sync": "38;5;110",
-    "dirty": "38;5;179",
-    "dim": "2",
+# Color themes, as 256-color codes. "lanes" cycles through the open branches;
+# "merged" colors merged branches (None: the lane's own color, dimmed).
+# Each branch already has its own row, so most themes use one hue for all of them.
+THEMES = {
+    "default": {                                                    # a color per branch
+        "trunk": "38;5;75",
+        "lanes": ["38;5;176", "38;5;114", "38;5;179", "38;5;110"],  # pink, green, amber, steel
+        "head": "1;38;5;222", "ahead": "38;5;114", "behind": "38;5;174",
+        "sync": "38;5;110", "dirty": "38;5;179", "merged": None,
+    },
+    "gold": {                                                       # black and gold, for dark terminals
+        "trunk": "38;5;178",
+        "lanes": ["38;5;222", "38;5;180", "38;5;137"],              # shades of gold
+        "head": "1", "ahead": "38;5;186", "behind": "38;5;173",
+        "sync": "38;5;250", "dirty": "38;5;214", "merged": "38;5;94",
+    },
+    "mint": {                                                       # silver and green, for dark terminals
+        "trunk": "38;5;252",
+        "lanes": ["38;5;114", "38;5;79", "38;5;151"],               # shades of green
+        "head": "1;38;5;48", "ahead": "38;5;114", "behind": "38;5;246",
+        "sync": "38;5;159", "dirty": "38;5;229", "merged": "38;5;240",
+    },
+    "quiet": {                                                      # color only for what needs doing
+        "trunk": "38;5;75",
+        "lanes": ["38;5;110"],
+        "head": "1", "ahead": "2", "behind": "2",
+        "sync": "38;5;214", "dirty": "38;5;214", "merged": "38;5;243",
+    },
+    "colorblind": {                                                 # Okabe-Ito colors; no red/green pairs
+        "trunk": "38;5;74",
+        "lanes": ["38;5;214"],
+        "head": "1", "ahead": "38;5;74", "behind": "38;5;166",
+        "sync": "1", "dirty": "1;38;5;172", "merged": "38;5;243",
+    },
 }
+THEME_NAMES = {"default": "默认", "gold": "黑金", "mint": "银绿", "quiet": "素净", "colorblind": "色弱友好"}
+COLORS = dict(THEMES["default"], dim="2")
 
 
 class Paint:
@@ -79,6 +107,16 @@ def pad(text, n, right=False):
 def width_of(text):
     """Terminal columns: CJK characters take two."""
     return sum(2 if unicodedata.east_asian_width(ch) in "WF" else 1 for ch in text)
+
+
+def pick_theme(argv):
+    """--theme=NAME wins, then GITGRAPH_THEME. Returns the name, or None if unknown."""
+    name = next((a.split("=", 1)[1] for a in argv if a.startswith("--theme=")),
+                os.environ.get("GITGRAPH_THEME") or "default")
+    if name not in THEMES:
+        return None
+    COLORS.update(THEMES[name])
+    return name
 
 
 def use_color(argv):
@@ -408,7 +446,7 @@ def render(cwd, color=True, details=False):
 
     # branches
     for ln in lanes:
-        code = ln.color if ln.join is None else COLORS["dim"] + ";" + ln.color
+        code = ln.color if ln.join is None else COLORS["merged"] or COLORS["dim"] + ";" + ln.color
         vis = [col_of[c] for c in ln.commits if c in col_of]
         first, last = min(vis), max(vis)
         if ln.fork in col_of and ln.fork in row_of:
@@ -562,7 +600,8 @@ def segment_table(cwd, r, tagged, paint):
 
 def legend(color=True):
     p = Paint(color)
-    t, l1, l2 = COLORS["trunk"], COLORS["lanes"][0], COLORS["lanes"][1]
+    lanes = COLORS["lanes"]
+    t, l1, l2 = COLORS["trunk"], lanes[0], lanes[1 % len(lanes)]
     dim = COLORS["dim"]
     rows = [
         ("", "", "The graph", "图上的符号"),
@@ -577,7 +616,7 @@ def legend(color=True):
         (l1, "┼", "two lines cross", "两条线在这里交叉而过"),
         (l1, "┄", "forked too long ago to fit", "分叉点太早，不在图里"),
         (t, "─", "time flows left to right; the top row is always main", "时间从左往右走；第一行永远是主线 main"),
-        (dim + ";" + l2, "──", "dimmed: a branch that is already merged", "暗色的线：已经合并完的旧分支"),
+        (COLORS["merged"] or dim + ";" + l2, "──", "dimmed: a branch that is already merged", "暗色的线：已经合并完的旧分支"),
         ("", "", "", ""),
         ("", "", "Next to a branch name", "分支名后面的小标记"),
         (COLORS["ahead"], "+3", "3 commits not in main yet", "比 main 多 3 次提交（还没合并进 main 的工作）"),
@@ -1107,12 +1146,33 @@ def demo(pause=True, color=True):
         shutil.rmtree(box, ignore_errors=True)
 
 
+# ------------------------------------------------------------------- themes
+
+def themes(path, color=True):
+    """The graph of the repository at PATH, drawn once in every theme."""
+    out = []
+    for name in THEMES:
+        COLORS.update(THEMES[name])
+        graph = render(path, color)
+        if not graph:
+            return tr("not inside a git repository; run it in one to preview the themes",
+                      "这里不是 git 仓库；在一个仓库里运行才能预览主题")
+        title = f"--theme={name}" + ("" if LANG != "zh" else f"  {THEME_NAMES[name]}")
+        out += [Paint(color)("1", title), *("  " + line for line in graph.splitlines()), ""]
+    out.append(tr("Use one: add --theme=NAME to the command, or set GITGRAPH_THEME=NAME.",
+                  "选定后：在命令后加 --theme=名字，或者设置环境变量 GITGRAPH_THEME=名字。"))
+    return "\n".join(out)
+
+
 # ---------------------------------------------------------------------- cli
 
 def main(argv):
     global LANG
     LANG = pick_lang(argv)
     color = use_color(argv)
+    if not pick_theme(argv) and "--statusline" not in argv:
+        print(tr("unknown theme; choose one of: ", "没有这个主题，可选：") + ", ".join(THEMES), file=sys.stderr)
+        return
     args = [a for a in argv if not a.startswith("--")]
     if "-h" in argv or "--help" in argv:
         print(__doc__.strip())
@@ -1123,6 +1183,8 @@ def main(argv):
         print(out or tr("not inside a git repository", "这里不是 git 仓库"))
     elif args[:1] == ["learn"]:
         learn(pause="--no-pause" not in argv, color=color)
+    elif args[:1] == ["themes"]:
+        print(themes(args[1] if len(args) > 1 else ".", color))
     elif args[:1] == ["demo"]:
         demo(pause="--no-pause" not in argv, color=color)
     elif "--statusline" in argv:
