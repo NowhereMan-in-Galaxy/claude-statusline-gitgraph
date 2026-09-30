@@ -26,6 +26,7 @@ It also nudges good habits, especially if you're new to git: commit in small ste
 - **Just enough numbers.** `+3 −1` shows how far a branch is ahead of and behind main, `↑2 ↓1` compares it with its remote, `✎2` counts uncommitted files, and `12m` is the time since the last commit.
 - **Details on demand.** `gitgraph log` letters each branch segment and tells you what it did.
 - **Teaches git.** `gitgraph learn` is a 17-step, hands-on git tutorial that runs in a throwaway sandbox. Every command is annotated, and you watch the graph change as you go.
+- **Shows teamwork.** `gitgraph demo` plays out a project where a lead agent hands work to three subagents, each on its own branch, until everything is merged and pushed.
 - **Zero dependencies.** One Python file, standard library only. All you need is `git` and `python3`.
 - **English and Chinese.** The language follows your system, and `--en` / `--zh` switch it.
 
@@ -38,6 +39,7 @@ cd ~/tools/claude-statusline-gitgraph
 python3 gitgraph.py ~/your/project   # the graph
 python3 gitgraph.py log              # the graph, with each branch segment explained
 python3 gitgraph.py learn            # the git tutorial (press Enter to step through)
+python3 gitgraph.py demo             # a simulated team of subagents
 python3 gitgraph.py legend           # what every symbol means
 ```
 
@@ -76,12 +78,12 @@ To make it a one-word command, save this as `~/.local/bin/gitgraph` and make it 
 ```sh
 #!/bin/sh
 case "$1" in
-  learn|legend|log) exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" "$@" --color ;;
-  *)                exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" log --color "$@" ;;
+  learn|legend|log|demo) exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" "$@" --color ;;
+  *)                     exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" log --color "$@" ;;
 esac
 ```
 
-Then run `gitgraph` in any terminal, or `! gitgraph` inside Claude Code. `gitgraph learn` and `gitgraph legend` work too.
+Then run `gitgraph` in any terminal, or `! gitgraph` inside Claude Code. `gitgraph learn`, `gitgraph demo` and `gitgraph legend` work too.
 
 ## Learn git with it: `learn`
 
@@ -98,6 +100,18 @@ A beginner-friendly tour in five chapters. Every command carries a one-line comm
 It ends with a page of good habits and an everyday-commands cheat sheet. Everything runs in a temporary repository that is deleted afterwards, so your projects are never touched. Press Ctrl+C to quit at any time.
 
 ![gitgraph learn](docs/learn.svg)
+
+## Watch a team of agents: `demo`
+
+What does a repository look like when several agents work on it at once? `demo` plays it out in nine steps, in a sandbox that is deleted afterwards:
+
+1. A lead agent hands a cart, a checkout page and a user guide to three subagents. Each gets its own `git worktree`: a separate folder on its own branch, so they never overwrite each other's files.
+2. The subagents commit side by side, and three rows grow under main.
+3. A teammate pushes a fix, and every open branch shows `−1`.
+4. The lead agent reviews and merges the branches one by one. One subagent still has an uncommitted edit (`✎1`).
+5. Everything is merged and pushed: no open rows, no `↑`.
+
+![gitgraph demo](docs/team.svg)
 
 ## Reading the graph
 
@@ -178,6 +192,7 @@ The images in this README are generated from real `gitgraph` output by `python3 
 - **信息刚好够用**：`+3 −1` 是比 main 多几次、少几次提交，`↑2 ↓1` 是和远程仓库差几次提交，`✎2` 是有几个文件改了还没提交，`12m` 是离上次提交过了多久。
 - **想看细节随时看**：`gitgraph log` 给每一段分支标上字母，并逐段说明它做了什么。
 - **顺便学会 git**：`gitgraph learn` 是一套 17 步的 git 入门教程，在临时的练习仓库里动手操作。每条命令都有注释，每一步都能看到图的变化。
+- **看懂多人协作**：`gitgraph demo` 模拟一个项目：主代理把任务分给三个子代理，各开一个分支并行做，最后全部合并、推送。
 - **零依赖**：一个 Python 文件，只用标准库，有 `git` 和 `python3` 就能跑。
 - **中英双语**：默认跟随系统语言，用 `--zh` / `--en` 切换。
 
@@ -190,6 +205,7 @@ cd ~/tools/claude-statusline-gitgraph
 python3 gitgraph.py ~/your/project   # 画出分支图
 python3 gitgraph.py log --zh         # 分支图 + 每一段做了什么
 python3 gitgraph.py learn --zh       # git 入门教程（按回车一步步走）
+python3 gitgraph.py demo --zh        # 模拟子代理团队协作
 python3 gitgraph.py legend --zh      # 符号表
 ```
 
@@ -232,12 +248,12 @@ printf '\n%s' "$(python3 ~/tools/claude-statusline-gitgraph/gitgraph.py --color 
 ```sh
 #!/bin/sh
 case "$1" in
-  learn|legend|log) exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" "$@" --color ;;
-  *)                exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" log --color "$@" ;;
+  learn|legend|log|demo) exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" "$@" --color ;;
+  *)                     exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" log --color "$@" ;;
 esac
 ```
 
-之后在任何终端里输入 `gitgraph` 就能看，在 Claude Code 里输入 `! gitgraph`。`gitgraph learn`、`gitgraph legend` 也能直接用。
+之后在任何终端里输入 `gitgraph` 就能看，在 Claude Code 里输入 `! gitgraph`。`gitgraph learn`、`gitgraph demo`、`gitgraph legend` 也能直接用。
 
 ## 用它学 git：`learn`
 
@@ -257,6 +273,18 @@ esac
 教程最后附一页"好习惯"和一页"常用命令"速查。整个教程都在临时的练习仓库里进行，结束后自动删除，不会碰你的项目。随时可以按 Ctrl+C 退出。
 
 ![gitgraph learn](docs/learn.zh-CN.svg)
+
+## 看一个 agent 团队怎么干活：`demo`
+
+好几个 agent 同时改一个仓库时，仓库里会是什么样？`demo` 用九步演示一遍，同样在临时仓库里进行，结束后删除：
+
+1. 主代理把购物车、结算页和使用说明分给三个子代理。每个子代理有自己的 `git worktree`：一个单独的文件夹，检出自己的分支，所以不会互相覆盖文件。
+2. 子代理们并行提交，main 下面长出三行。
+3. 同事推送了一个修复，每个还开着的分支都显示 `−1`。
+4. 主代理逐个检查并合并。有一个子代理还有没提交的改动（`✎1`）。
+5. 全部合并并推送：没有还开着的行，也没有 `↑`。
+
+![gitgraph demo](docs/team.zh-CN.svg)
 
 ## 看懂这张图
 
