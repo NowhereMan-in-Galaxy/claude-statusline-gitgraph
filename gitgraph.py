@@ -66,7 +66,36 @@ THEMES = {
         "sync": "1", "dirty": "1;38;5;172", "merged": "38;5;243",
     },
 }
-THEME_NAMES = {"default": "默认", "gold": "黑金", "mint": "银绿", "quiet": "素净", "colorblind": "色弱友好"}
+# Light-background versions, used when the system is in light mode.
+# Themes without one (gold, mint) are made for dark terminals and stay as they are.
+LIGHT = {
+    "default": {
+        "trunk": "38;5;32",
+        "lanes": ["38;5;133", "38;5;28", "38;5;136", "38;5;67"],
+        "head": "1;38;5;130", "ahead": "38;5;28", "behind": "38;5;131",
+        "sync": "38;5;25", "dirty": "38;5;136", "merged": "38;5;248",
+    },
+    "quiet": {
+        "trunk": "38;5;32",
+        "lanes": ["38;5;67"],
+        "head": "1", "ahead": "2", "behind": "2",
+        "sync": "38;5;166", "dirty": "38;5;166", "merged": "38;5;248",
+    },
+    "colorblind": {
+        "trunk": "38;5;25",
+        "lanes": ["38;5;172"],
+        "head": "1", "ahead": "38;5;25", "behind": "38;5;166",
+        "sync": "1", "dirty": "1;38;5;130", "merged": "38;5;248",
+    },
+}
+# The terminal's own 16 colors: the terminal's theme decides the actual shades.
+THEMES["terminal"] = {
+    "trunk": "34", "lanes": ["35", "32", "33", "36"],
+    "head": "1", "ahead": "32", "behind": "31",
+    "sync": "36", "dirty": "33", "merged": None,
+}
+THEME_NAMES = {"default": "默认", "gold": "黑金", "mint": "银绿", "quiet": "素净",
+               "colorblind": "色弱友好", "terminal": "跟随终端配色"}
 COLORS = dict(THEMES["default"], dim="2")
 
 
@@ -109,13 +138,45 @@ def width_of(text):
     return sum(2 if unicodedata.east_asian_width(ch) in "WF" else 1 for ch in text)
 
 
+def appearance():
+    """"light" or "dark": GITGRAPH_APPEARANCE, then the terminal's COLORFGBG, then the system setting."""
+    forced = os.environ.get("GITGRAPH_APPEARANCE", "").lower()
+    if forced in ("light", "dark"):
+        return forced
+    bg = os.environ.get("COLORFGBG", "").split(";")[-1]
+    if bg.isdigit():
+        return "light" if bg in ("7", "15") else "dark"
+    if sys.platform == "darwin":
+        probe = ["defaults", "read", "-g", "AppleInterfaceStyle"]      # prints "Dark", or fails in light mode
+        dark = lambda out, ok: ok and "dark" in out.lower()
+    elif sys.platform == "win32":
+        probe = ["reg", "query", r"HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize",
+                 "/v", "AppsUseLightTheme"]
+        dark = lambda out, ok: not ok or "0x0" in out
+    else:
+        probe = ["gsettings", "get", "org.gnome.desktop.interface", "color-scheme"]
+        dark = lambda out, ok: not ok or "dark" in out.lower()
+    try:
+        r = subprocess.run(probe, capture_output=True, text=True, timeout=1)
+        return "dark" if dark(r.stdout, r.returncode == 0) else "light"
+    except (OSError, subprocess.SubprocessError):
+        return "dark"
+
+
+def palette(name):
+    """A theme's colors, in its light version when the system is in light mode."""
+    if name in LIGHT and appearance() == "light":
+        return LIGHT[name]
+    return THEMES[name]
+
+
 def pick_theme(argv):
     """--theme=NAME wins, then GITGRAPH_THEME. Returns the name, or None if unknown."""
     name = next((a.split("=", 1)[1] for a in argv if a.startswith("--theme=")),
                 os.environ.get("GITGRAPH_THEME") or "default")
     if name not in THEMES:
         return None
-    COLORS.update(THEMES[name])
+    COLORS.update(palette(name))
     return name
 
 
@@ -1152,7 +1213,7 @@ def themes(path, color=True):
     """The graph of the repository at PATH, drawn once in every theme."""
     out = []
     for name in THEMES:
-        COLORS.update(THEMES[name])
+        COLORS.update(palette(name))
         graph = render(path, color)
         if not graph:
             return tr("not inside a git repository; run it in one to preview the themes",
