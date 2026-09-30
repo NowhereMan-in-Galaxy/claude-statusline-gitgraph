@@ -20,6 +20,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import unicodedata
 
 MAX_TRUNK = 14    # trunk commits to show
 MAX_LANE = 40     # commits to follow back along one branch
@@ -48,6 +49,11 @@ class Paint:
         if not self.enabled or not code or not text:
             return text
         return f"\033[{code}m{text}\033[0m"
+
+
+def width_of(text):
+    """Terminal columns: CJK characters take two."""
+    return sum(2 if unicodedata.east_asian_width(ch) in "WF" else 1 for ch in text)
 
 
 def use_color(argv):
@@ -562,95 +568,271 @@ def legend(color=True):
 # -------------------------------------------------------------------- learn
 
 def learn(pause=True, color=True):
-    """Walk through the everyday branch workflow in a throwaway repository."""
+    """A beginner's tour of everyday git, run in a throwaway sandbox."""
     p = Paint(color)
+    dim = COLORS["dim"]
     box = tempfile.mkdtemp(prefix="gitgraph-learn-")
-    clock = [int(time.time()) - 3 * 3600]
+    repo = os.path.join(box, "my-site")          # the learner's project
+    remote = os.path.join(box, "github.git")     # a local folder standing in for GitHub
+    mate = os.path.join(box, "teammate")         # a teammate's copy of the project
+    os.makedirs(repo)
+    clock = [int(time.time()) - 5 * 3600]
     env = dict(os.environ,
                GIT_AUTHOR_NAME="learner", GIT_AUTHOR_EMAIL="learner@example.com",
                GIT_COMMITTER_NAME="learner", GIT_COMMITTER_EMAIL="learner@example.com",
-               GIT_CONFIG_COUNT="1", GIT_CONFIG_KEY_0="commit.gpgsign", GIT_CONFIG_VALUE_0="false")
+               GIT_CONFIG_COUNT="2",
+               GIT_CONFIG_KEY_0="commit.gpgsign", GIT_CONFIG_VALUE_0="false",
+               GIT_CONFIG_KEY_1="advice.defaultBranchName", GIT_CONFIG_VALUE_1="false",
+               LANG="C", LC_ALL="C")
 
-    def sh(cmd):
-        subprocess.run(cmd, shell=True, cwd=box, env=env, capture_output=True)
-
-    def show(cmd):
-        print("  " + p(COLORS["dim"], "$ ") + cmd)
-
-    def run(cmd):
-        show(cmd)
-        sh(cmd + " -q" if cmd.startswith("git switch") else cmd)
-
-    def commit(msg, path):
+    def tick():
         clock[0] += 5 * 60
         env["GIT_AUTHOR_DATE"] = env["GIT_COMMITTER_DATE"] = f"{clock[0]} +0000"
-        show(f'git commit -m "{msg}"')
-        sh(f'echo "{msg}" >> {path} && git add -A && git commit -q -m "{msg}"')
 
-    def merge(branch):
-        clock[0] += 5 * 60
-        env["GIT_AUTHOR_DATE"] = env["GIT_COMMITTER_DATE"] = f"{clock[0]} +0000"
-        run(f"git merge --no-ff --no-edit {branch}")
+    def sh(command, cwd=repo):
+        r = subprocess.run(command, shell=True, cwd=cwd, env=env, capture_output=True, text=True)
+        return (r.stdout + r.stderr).strip()
 
-    steps = [
-        ("新建仓库，在 main 上存两次档",
-         lambda: (run("git init -b main"), commit("搭好项目骨架", "app.txt"), commit("写首页", "home.txt")),
-         "每个 ● 是一次提交，就像游戏存档。线从左往右是时间，越往右越新。\n"
-         "◉ 是你现在所在的位置（叫 HEAD）。第一行永远是主线 main。"),
-        ("开一个新分支",
-         lambda: run("git switch -c feat/login"),
-         "开分支不是提交，不会多出新的 ●。分支只是给当前这个存档点起了一个新名字，\n"
-         "并且让你之后的提交都记在这个名字下面。它现在和 main 指着同一个点，\n"
-         "所以图上还没有新的线，只是 main 旁边多了 feat/login 这个名字。"),
-        ("在分支上提交两次",
-         lambda: (commit("写登录表单", "login.txt"), commit("接上登录接口", "login.txt")),
-         "分支长出了自己的一行，╰ 是它从 main 分出去的地方。\n"
-         "+2 表示它比 main 多 2 次提交；后面的时间是距离上次提交过了多久。\n"
-         "这些提交只在分支上，main 完全不受影响。"),
-        ("与此同时，main 也往前走了",
-         lambda: (run("git switch main"), commit("修首页错别字", "home.txt"), run("git switch feat/login")),
-         "−1 表示 main 有 1 次提交是你的分支还没有的。\n"
-         "+ 和 − 同时出现，说明两条线各自往前走了；合并时 git 会把两边的改动合到一起。"),
-        ("改了文件，但还没提交",
-         lambda: (show("（编辑 login.txt，先不提交）"), sh("echo draft >> login.txt")),
-         "✎1 表示有 1 个文件改了还没提交。\n"
-         "它在提醒你：这些改动还没存档，出了意外就找不回来。"),
-        ("把它提交",
-         lambda: commit("登录失败时给出提示", "login.txt"),
-         "✎ 消失了，+2 变成了 +3。"),
-        ("把分支合并回 main",
-         lambda: (run("git switch main"), merge("feat/login"), run("git branch -d feat/login")),
-         "◆ 是合并提交，╯ 是分支回到主线的地方。\n"
-         "合并完的分支变暗，名字也删掉了。它的提交都还在，只是不再需要一个名字指着它。"),
-        ("同时开两个分支",
-         lambda: (commit("更新说明文档", "readme.txt"),
-                  run("git switch -c feat/search"), commit("加搜索框", "search.txt"),
-                  run("git switch main"), run("git switch -c feat/theme"),
-                  commit("加深色模式", "theme.txt"), commit("深色模式下的图标", "theme.txt")),
-         "每个还没合并的分支各占一行。├ 表示两个分支从同一个存档点分出去。\n"
-         "加粗的分支名就是你现在所在的分支。"),
-        ("很长的分支会被折叠",
-         lambda: [commit(f"调整配色 {i}", "theme.txt") for i in range(1, 8)],
-         "中间的提交收成了 (n)，让图保持短小。\n"
-         "开头、结尾、分叉点和合并点永远不会被折叠。"),
+    def say(command, note):
+        line = "  " + p(dim, "$ ") + command
+        if note:
+            line += " " * max(2, 36 - width_of(command)) + p(dim, "# " + note)
+        print(line)
+
+    def git_(command, note="", show=False):
+        """Run a git command, print it with a comment, optionally show git's own output."""
+        if command.startswith(("git commit", "git merge")):
+            tick()
+        out = sh(command)
+        say(command, note)
+        if show and out:
+            for line in out.splitlines()[:8]:
+                print("      " + p(dim, line))
+
+    def edit(path, text, note, append=True):
+        with open(os.path.join(repo, path), "a" if append else "w", encoding="utf-8") as f:
+            f.write(text + "\n")
+        print("  " + p(COLORS["dirty"], f"✎ {note}"))
+
+    def aside(text):
+        print("  " + p(dim, f"（{text}）"))
+
+    def save(path, text, message, note="存档；-m 后面是这次存档的说明"):
+        edit(path, text, f"编辑 {path}")
+        git_(f"git add {path}", "把这个文件放进暂存区，准备存档")
+        git_(f'git commit -m "{message}"', note)
+
+    # ------------------------------------------------------------------ steps
+    def s_init():
+        git_("git init -b main", "把当前文件夹变成 git 仓库，主线叫 main")
+
+    def s_first():
+        edit("index.html", "<h1>欢迎</h1>", "新建 index.html，写一行标题")
+        git_("git status --short", "看看有什么变化；?? 表示 git 还没管这个文件", show=True)
+        git_("git add index.html", "把它放进暂存区，意思是\"下次存档要包括它\"")
+        git_('git commit -m "feat: add the home page"', "存档；-m 后面是这次存档的说明")
+
+    def s_log():
+        save("style.css", "h1 { color: teal; }", "feat: add basic styles")
+        git_("git log --oneline", "列出所有存档：编号 + 说明，最新的在上面", show=True)
+
+    def s_branch():
+        git_("git switch -c feat/login", "新建分支 feat/login 并切换过去")
+
+    def s_branch_commits():
+        save("login.html", "<form>登录</form>", "feat: add the login form")
+        save("login.html", "<script>login()</script>", "feat: call the login API")
+
+    def s_main_moves():
+        git_("git switch main", "切换回 main")
+        save("index.html", "<p>欢迎光临</p>", "fix: correct a typo on the home page")
+        git_("git switch feat/login", "再切回分支继续工作")
+
+    def s_dirty():
+        edit("login.html", "<p>密码错误</p>", "给 login.html 加一行，先不存档")
+        git_("git status --short", " M 表示文件改过了但还没存档", show=True)
+        git_("git diff", "看具体改了哪几行；+ 是新增，- 是删除", show=True)
+
+    def s_commit_it():
+        git_("git add login.html", "放进暂存区")
+        git_('git commit -m "feat: show an error when the password is wrong"', "存档")
+
+    def s_merge():
+        git_("git switch main", "合并要站在\"接收方\"：先回到 main")
+        git_("git merge --no-ff feat/login -m \"Merge branch 'feat/login'\"",
+             "把分支合并进来；--no-ff 保留分叉的形状")
+        git_("git branch -d feat/login", "删掉用完的分支名（提交都还在）")
+
+    def s_conflict():
+        git_("git switch -c feat/title", "开一个改标题的分支")
+        edit("index.html", "<h1>欢迎来到小站</h1>", "把标题改成\"欢迎来到小站\"", append=False)
+        git_("git commit -am \"feat: new site title\"", "-a 表示把改过的已跟踪文件一起存档")
+        git_("git switch main", "回到 main")
+        edit("index.html", "<h1>你好</h1>", "在 main 上把同一行改成\"你好\"", append=False)
+        git_("git commit -am \"feat: friendlier title\"", "存档")
+        git_("git merge feat/title", "合并……两边改了同一行，git 不知道听谁的", show=True)
+        print()
+        aside("打开 index.html，git 把两个版本都写了进去：")
+        with open(os.path.join(repo, "index.html"), encoding="utf-8") as f:
+            for line in f.read().splitlines():
+                print("      " + p(COLORS["behind"] if line[:1] in "<=>" and line[:2] in ("<<", "==", ">>") else dim, line))
+        print()
+        edit("index.html", "<h1>你好，欢迎来到小站</h1>", "手动改成最终想要的样子，删掉 <<< === >>> 标记", append=False)
+        git_("git add index.html", "告诉 git：这个冲突解决好了")
+        git_("git commit --no-edit", "完成合并；--no-edit 使用默认的合并说明")
+        git_("git branch -d feat/title", "删掉分支名")
+
+    def s_remote():
+        sh(f"git init -q --bare {remote}", cwd=box)
+        aside("用一个本地文件夹 github.git 假装是 GitHub 上的仓库")
+        git_("git remote add origin ../github.git", "登记远程仓库，起名叫 origin")
+        git_("git push -u origin main", "把 main 上传；-u 让本地 main 记住远程的 main")
+
+    def s_ahead():
+        save("about.html", "<p>关于我们</p>", "feat: add the about page")
+        save("about.html", "<p>联系方式</p>", "docs: add contact details")
+
+    def s_push():
+        git_("git push", "把新的存档上传到远程")
+
+    def s_pull():
+        sh(f"git clone -q {remote} {mate}", cwd=box)
+        with open(os.path.join(mate, "README.md"), "w", encoding="utf-8") as f:
+            f.write("# my-site\n")
+        tick()
+        sh('git add README.md && git commit -q -m "docs: add a README" && git push -q', cwd=mate)
+        aside("与此同时，同事在他的电脑上提交了一次，并推送到了远程")
+        git_("git fetch", "去远程看看有什么新东西：只下载，不合并")
+
+    def s_pull_done():
+        git_("git pull", "下载并合并到当前分支（相当于 fetch + merge）")
+
+    def s_parallel():
+        git_("git switch -c feat/search", "开第一个分支")
+        save("search.html", "<input>", "feat: add a search box")
+        git_("git switch main", "回到 main")
+        git_("git switch -c feat/theme", "再开第二个分支")
+        save("style.css", "body { background: #111; }", "feat: add dark mode")
+        save("style.css", "img { filter: invert(1); }", "feat: invert icons in dark mode")
+
+    def s_fold():
+        for i in range(1, 8):
+            with open(os.path.join(repo, "style.css"), "a", encoding="utf-8") as f:
+                f.write(f"/* tweak {i} */\n")
+            tick()
+            sh(f'git commit -qam "style: tweak colors ({i})"')
+        print("  " + p(COLORS["dirty"], "✎ 微调了 7 次配色，每次都存档"))
+        say('git commit -am "style: tweak colors (n)"', "（重复 7 次）")
+
+    chapters = [
+        ("第一章  存档：把工作保存下来", [
+            ("新建仓库", s_init,
+             "仓库（repository）就是一个会记录历史的文件夹。现在还没有任何存档，所以图是空的。"),
+            ("第一次存档", s_first,
+             "存档分两步：add 把文件放进\"暂存区\"，commit 把暂存区里的东西存成一个存档（提交）。\n"
+             "图上的 ● 就是一次提交，◉ 是你现在所在的位置（HEAD）。\n"
+             "提交说明的规范写法（Conventional Commits）是\"类型: 做了什么\"，用英文、短句、动词开头。\n"
+             "常用类型：feat 新功能 · fix 修问题 · docs 文档 · style 样式/格式 · refactor 重构 · chore 杂务。"),
+            ("再存一次，然后看历史", s_log,
+             "git log 列出所有存档。前面那串字母数字是提交编号，以后可以用它找回任何一个存档。\n"
+             "好习惯：一次提交只做一件事。这样出了问题，很容易找到是哪一步引起的。"),
+        ]),
+        ("第二章  分支：在不影响主线的地方做新功能", [
+            ("开一个新分支", s_branch,
+             "开分支不是提交，不会多出新的 ●。分支只是给当前这个存档点起了一个新名字，\n"
+             "并且让你之后的提交都记在这个名字下面。分支名的常见写法是\"类型/简短描述\"，比如 feat/login、fix/typo。"),
+            ("在分支上提交", s_branch_commits,
+             "分支长出了自己的一行，╰ 是它从 main 分出去的地方。+2 表示它比 main 多 2 次提交。\n"
+             "这些提交只在分支上，main 完全不受影响。"),
+            ("与此同时，main 也往前走了", s_main_moves,
+             "−1 表示 main 有 1 次提交是你的分支还没有的。+ 和 − 同时出现，说明两条线各自往前走了。\n"
+             "git switch 用来在分支之间切换，切换时文件夹里的文件会变成那个分支的样子。"),
+            ("改了文件，但还没存档", s_dirty,
+             "✎1 表示有 1 个文件改了还没存档。git status 看哪些文件变了，git diff 看具体变了什么。\n"
+             "好习惯：存档之前先看一眼 diff，确认没有带进不该提交的东西。"),
+            ("把它存档", s_commit_it,
+             "✎ 消失了，+2 变成了 +3。"),
+        ]),
+        ("第三章  合并：把分支的成果并回主线", [
+            ("合并分支", s_merge,
+             "合并产生了一个新的提交（合并提交），平时画成 ◆；你现在正站在它上面，所以显示为 ◉。\n"
+             "╯ 是分支回到主线的地方。合并完的分支变暗，名字也删掉了，但它的提交都还在。\n"
+             "为什么用 --no-ff：否则在 main 没有新提交时，git 会直接把 main 挪到分支末尾，分叉的形状就看不出来了。"),
+            ("合并冲突：两边改了同一行", s_conflict,
+             "冲突不是出错，只是 git 在问你：\"同一行被改成了两个样子，要留哪个？\"\n"
+             "解决的步骤永远是：打开文件 → 改成想要的样子并删掉 <<< === >>> 标记 → git add → git commit。"),
+        ]),
+        ("第四章  远程仓库：和 GitHub 同步", [
+            ("连上远程仓库，第一次上传", s_remote,
+             "远程仓库就是放在别处（比如 GitHub）的一份副本，用来备份和协作。origin 是它的名字，也是最常见的叫法。"),
+            ("本地又存了两次档", s_ahead,
+             "↑2 表示本地有 2 次提交还没上传。它们只在你的电脑上，电脑坏了就没了。"),
+            ("上传", s_push,
+             "↑ 消失了：本地和远程一样了。好习惯：做完一段工作就 push，远程就是你的备份。"),
+            ("同事也上传了东西", s_pull,
+             "↓1 表示远程有 1 次提交你还没拿到。fetch 只是\"看一眼\"，不会改动你的文件。"),
+            ("拉下来", s_pull_done,
+             "↓ 消失了。好习惯：开始工作前先 pull，push 之前也先 pull，能少遇到很多冲突。"),
+        ]),
+        ("第五章  进阶：同时做几件事", [
+            ("同时开两个分支", s_parallel,
+             "每个还没合并的分支各占一行。├ 表示两个分支从同一个存档点分出去。加粗的分支名就是你现在所在的分支。"),
+            ("很长的分支会被折叠", s_fold,
+             "中间的提交收成了 (n)，让图保持短小。开头、结尾、分叉点和合并点永远不会被折叠。"),
+        ]),
     ]
 
+    habits = [
+        ("提交说明", "类型: 做了什么，比如 feat: add the login form；一次提交只做一件事"),
+        ("分支名", "类型/简短描述，比如 feat/login、fix/typo；做完合并后删掉"),
+        ("存档之前", "git status 看改了哪些文件，git diff 看改了什么，别带进密码和私人文件"),
+        ("存档频率", "完成一小步就提交；宁可多存几次，也别攒一大堆"),
+        ("和远程同步", "开工前 git pull，做完一段就 git push"),
+        ("不要做", "已经 push 的历史不要改写（rebase / reset --hard / push --force）"),
+        ("用 .gitignore", "把不该进仓库的文件（缓存、密钥、个人数据）写进去，git 就会忽略它们"),
+    ]
+    commands = [
+        ("git status", "现在有哪些改动"), ("git diff", "具体改了什么"),
+        ("git add 文件", "放进暂存区"), ("git commit -m \"说明\"", "存档"),
+        ("git log --oneline", "看历史"), ("git switch -c 名字", "开新分支"),
+        ("git switch 名字", "切换分支"), ("git merge 名字", "把分支合并进来"),
+        ("git branch -d 名字", "删掉用完的分支"), ("git push / git pull", "上传 / 下载"),
+    ]
+
+    total = sum(len(steps) for _, steps in chapters)
+    n = 0
     try:
-        print(p("1", "gitgraph 学习模式") + p(COLORS["dim"], f"  （沙盒仓库：{box}，结束后自动删除）"))
-        for i, (title, action, note) in enumerate(steps, 1):
+        print(p("1", "gitgraph 学习模式") + p(dim, f"  （练习仓库放在临时目录里，结束后自动删除）"))
+        for title, steps in chapters:
             print()
-            print(p("1", f"第 {i}/{len(steps)} 步  {title}"))
-            action()
-            print()
-            for line in render(box, color).splitlines():
-                print("    " + line)
-            print()
-            for line in note.splitlines():
-                print("  " + line)
-            if pause and sys.stdin.isatty() and i < len(steps):
-                input(p(COLORS["dim"], "\n  按回车继续 ⏎ "))
+            print(p("1;" + COLORS["trunk"], title))
+            for name, action, note in steps:
+                n += 1
+                print()
+                print(p("1", f"第 {n}/{total} 步  {name}"))
+                action()
+                graph = render(repo, color)
+                if graph:
+                    print()
+                    for line in graph.splitlines():
+                        print("    " + line)
+                print()
+                for line in note.splitlines():
+                    print("  " + line)
+                if pause and sys.stdin.isatty():
+                    input(p(dim, "\n  按回车继续 ⏎ "))
         print()
-        print("  学完了。随时运行 " + p("1", "python3 gitgraph.py legend") + " 查看符号表。")
+        print(p("1;" + COLORS["trunk"], "好习惯速查"))
+        for k, v in habits:
+            print("  " + p("1", k) + " " * (16 - width_of(k)) + v)
+        print()
+        print(p("1;" + COLORS["trunk"], "常用命令"))
+        for k, v in commands:
+            print("  " + k + " " * (26 - width_of(k)) + p(dim, v))
+        print()
+        print("  学完了。随时运行 " + p("1", "python3 gitgraph.py legend") + " 查看图上的符号。")
+    except (KeyboardInterrupt, EOFError):
+        print()
     finally:
         shutil.rmtree(box, ignore_errors=True)
 

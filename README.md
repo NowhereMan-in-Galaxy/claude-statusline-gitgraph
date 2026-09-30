@@ -6,7 +6,7 @@
 
 - **简洁**：不显示提交说明，只画结构。已经合并完的旧分支会变暗，太长的分支会折叠成 `(5)`。
 - **信息刚好够用**：`+3 −1` 表示比 main 多几次、少几次提交，`↑2 ↓1` 表示和远程仓库差几次提交，`✎2` 表示有几个文件改了还没提交，`1h` 表示离上次提交过了多久。
-- **对新手友好**：自带符号表（`legend`）和一个 5 分钟的学习模式（`learn`）。学习模式在临时的沙盒仓库里一步步演示分支是怎么长出来、怎么合并的，不会碰你的项目。
+- **对新手友好**：自带符号表（`legend`）和一套 git 入门教程（`learn`），分五章共 17 步：存档、分支、合并（含解决冲突）、远程仓库（push / fetch / pull）、多分支并行。每条命令都附中文注释，关键处显示 git 的真实输出，还能看到图随之变化；最后附一页好习惯和常用命令速查。教程在临时的练习仓库里运行，不会碰你的项目。
 - **零依赖**：一个 Python 文件，只用标准库，有 `git` 和 `python3` 就能跑。
 
 ## 快速开始
@@ -16,7 +16,7 @@ git clone https://github.com/NowhereMan-in-Galaxy/claude-statusline-gitgraph.git
 cd ~/tools/claude-statusline-gitgraph
 
 python3 gitgraph.py log              # 详情：每一段分支做了什么、改了多少
-python3 gitgraph.py learn            # 学习模式：跟着走一遍分支的日常用法
+python3 gitgraph.py learn            # git 入门教程：五章 17 步，每步按回车继续
 python3 gitgraph.py legend           # 符号表：每个符号是什么意思
 python3 gitgraph.py ~/your/project   # 画出某个仓库的分支图
 ```
