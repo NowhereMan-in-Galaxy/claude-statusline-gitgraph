@@ -6,6 +6,22 @@ Most status lines tell you which branch you're on. This one shows you **the shap
 
 ![gitgraph in the Claude Code status line](docs/demo.svg)
 
+## Built for coding with an agent
+
+When Claude writes the code, it's easy to lose track of what happened to your repository. With the graph under the prompt, you see it as it happens:
+
+- **Claude edited files but didn't commit?** `✎3` appears.
+- **Claude made a branch and committed on it?** A new row grows, with `+3`.
+- **Work that exists only on your laptop?** `↑2` sits there until you push.
+
+It also nudges good habits, especially if you're new to git: commit in small steps, branch for each feature, merge when done, push often. A dirty `✎` or a growing `↑` is hard to ignore.
+
+![A real Claude Code session](docs/screenshot.png)
+
+*A real session: Claude has committed three times on `docs/public-readme` and every earlier feature branch has been merged into `main`.*
+
+## Features
+
 - **Glanceable.** The status line shows no commit messages, only structure. Merged branches fade, and long runs fold into `(5)`.
 - **Just enough numbers.** `+3 −1` shows how far a branch is ahead of and behind main, `↑2 ↓1` compares it with its remote, `✎2` counts uncommitted files, and `12m` is the time since the last commit.
 - **Details on demand.** `gitgraph log` letters each branch segment and tells you what it did.
