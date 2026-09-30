@@ -516,7 +516,7 @@ def segment_table(cwd, r, tagged, paint):
             cells.append(paint(code, padded) if k != "what" else paint(code, text))
         out.append(" " + "  ".join(cells).rstrip())
     out.append("")
-    out.append(paint(COLORS["dim"], " more: git log main..<branch>   ·   git diff --stat main...<branch>"))
+    out.append(paint(COLORS["dim"], " more: git log main..BRANCH   ·   git diff --stat main...BRANCH"))
     return out
 
 

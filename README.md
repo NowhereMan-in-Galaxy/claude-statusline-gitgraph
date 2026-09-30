@@ -59,7 +59,7 @@ printf '\n%s' "$(python3 ~/tools/claude-statusline-gitgraph/gitgraph.py "$cwd")"
  C  feat/search  open    2 commits  1 file    +30   −0  Sep 29 → now     Add a search box
  D  feat/theme   open    3 commits  2 files   +55   −4  Sep 29 → now     Dark mode icons
 
- more: git log main..<branch>   ·   git diff --stat main...<branch>
+ more: git log main..BRANCH   ·   git diff --stat main...BRANCH
 ```
 
 把它做成一个短命令会更顺手，比如放一个可执行文件到 `~/.local/bin/gitgraph`：
