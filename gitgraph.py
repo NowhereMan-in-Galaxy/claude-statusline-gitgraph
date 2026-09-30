@@ -11,7 +11,8 @@ merged, curving back in at its merge commit.
     python3 gitgraph.py legend         what every symbol means
     python3 gitgraph.py learn          a guided tour in a throwaway sandbox repository
     python3 gitgraph.py demo           a simulated team with subagents working in parallel
-    python3 gitgraph.py themes [PATH]  the graph in every color theme; pick one with --theme=NAME
+    python3 gitgraph.py themes [PATH]  the graph in every color theme
+    python3 gitgraph.py theme NAME     switch theme (saved in ~/.config/gitgraph/theme)
 
 Only the Python standard library is used.
 """
@@ -170,10 +171,23 @@ def palette(name):
     return THEMES[name]
 
 
+def theme_file():
+    base = os.environ.get("XDG_CONFIG_HOME") or os.path.join(os.path.expanduser("~"), ".config")
+    return os.path.join(base, "gitgraph", "theme")
+
+
+def saved_theme():
+    try:
+        with open(theme_file(), encoding="utf-8") as f:
+            return f.read().strip()
+    except OSError:
+        return ""
+
+
 def pick_theme(argv):
-    """--theme=NAME wins, then GITGRAPH_THEME. Returns the name, or None if unknown."""
+    """--theme=NAME wins, then GITGRAPH_THEME, then the saved theme. None if unknown."""
     name = next((a.split("=", 1)[1] for a in argv if a.startswith("--theme=")),
-                os.environ.get("GITGRAPH_THEME") or "default")
+                os.environ.get("GITGRAPH_THEME") or saved_theme() or "default")
     if name not in THEMES:
         return None
     COLORS.update(palette(name))
@@ -1220,9 +1234,24 @@ def themes(path, color=True):
                       "这里不是 git 仓库；在一个仓库里运行才能预览主题")
         title = f"--theme={name}" + ("" if LANG != "zh" else f"  {THEME_NAMES[name]}")
         out += [Paint(color)("1", title), *("  " + line for line in graph.splitlines()), ""]
-    out.append(tr("Use one: add --theme=NAME to the command, or set GITGRAPH_THEME=NAME.",
-                  "选定后：在命令后加 --theme=名字，或者设置环境变量 GITGRAPH_THEME=名字。"))
+    out.append(tr("Switch with: gitgraph theme NAME", "切换主题：gitgraph theme 名字"))
     return "\n".join(out)
+
+
+def set_theme(name):
+    """Save the theme used whenever --theme and GITGRAPH_THEME are not given."""
+    choices = "  ".join(f"{n} ({THEME_NAMES[n]})" if LANG == "zh" else n for n in THEMES)
+    if not name:
+        return (tr("current theme: ", "当前主题：") + (saved_theme() or "default") + "\n" +
+                tr("choose one: gitgraph theme NAME\n  ", "切换：gitgraph theme 名字\n  ") + choices)
+    if name not in THEMES:
+        return tr("no such theme; choose one of:\n  ", "没有这个主题，可选：\n  ") + choices
+    path = theme_file()
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(name + "\n")
+    return (tr(f"theme set to {name}; the status line picks it up on its next refresh",
+               f"已切换到 {name}（{THEME_NAMES[name]}），状态栏下次刷新就会生效"))
 
 
 # ---------------------------------------------------------------------- cli
@@ -1231,7 +1260,7 @@ def main(argv):
     global LANG
     LANG = pick_lang(argv)
     color = use_color(argv)
-    if not pick_theme(argv) and "--statusline" not in argv:
+    if not pick_theme(argv) and "--statusline" not in argv and args[:1] != ["theme"]:
         print(tr("unknown theme; choose one of: ", "没有这个主题，可选：") + ", ".join(THEMES), file=sys.stderr)
         return
     args = [a for a in argv if not a.startswith("--")]
@@ -1244,6 +1273,8 @@ def main(argv):
         print(out or tr("not inside a git repository", "这里不是 git 仓库"))
     elif args[:1] == ["learn"]:
         learn(pause="--no-pause" not in argv, color=color)
+    elif args[:1] == ["theme"]:
+        print(set_theme(args[1] if len(args) > 1 else ""))
     elif args[:1] == ["themes"]:
         print(themes(args[1] if len(args) > 1 else ".", color))
     elif args[:1] == ["demo"]:
