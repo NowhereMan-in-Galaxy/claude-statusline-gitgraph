@@ -1,0 +1,282 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="888" height="276" viewBox="0 0 888 276">
+<rect width="888" height="276" rx="12" fill="#1c1d22"/>
+<circle cx="22" cy="20" r="6" fill="#ff5f57"/><circle cx="42" cy="20" r="6" fill="#febc2e"/><circle cx="62" cy="20" r="6" fill="#28c840"/>
+<text x="444" y="25" fill="#7d8190" font-family="SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" text-anchor="middle">gitgraph log</text>
+<g fill="none" stroke-width="2" stroke-linecap="round">
+<path d="M40.1 63.0L35.4 63.0M40.1 63.0L44.8 63.0" stroke="#5fafff"/>
+<path d="M58.9 63.0L54.2 63.0M58.9 63.0L63.6 63.0" stroke="#5fafff"/>
+<path d="M68.3 63.0L63.6 63.0M68.3 63.0L73.0 63.0" stroke="#5fafff"/>
+<path d="M77.7 63.0L73.0 63.0M77.7 63.0L82.4 63.0" stroke="#5fafff"/>
+<path d="M87.1 63.0L82.4 63.0M87.1 63.0L91.8 63.0" stroke="#5fafff"/>
+<path d="M96.5 63.0L91.8 63.0M96.5 63.0L101.2 63.0" stroke="#5fafff"/>
+<path d="M105.9 63.0L101.2 63.0M105.9 63.0L110.6 63.0" stroke="#5fafff"/>
+<path d="M115.3 63.0L110.6 63.0M115.3 63.0L120.0 63.0" stroke="#5fafff"/>
+<path d="M134.1 63.0L129.4 63.0M134.1 63.0L138.8 63.0" stroke="#5fafff"/>
+<path d="M143.5 63.0L138.8 63.0M143.5 63.0L148.2 63.0" stroke="#5fafff"/>
+<path d="M152.9 63.0L148.2 63.0M152.9 63.0L157.6 63.0" stroke="#5fafff"/>
+<path d="M162.3 63.0L157.6 63.0M162.3 63.0L167.0 63.0" stroke="#5fafff"/>
+<path d="M171.7 63.0L167.0 63.0M171.7 63.0L176.4 63.0" stroke="#5fafff"/>
+<path d="M181.1 63.0L176.4 63.0M181.1 63.0L185.8 63.0" stroke="#5fafff"/>
+<path d="M190.5 63.0L185.8 63.0M190.5 63.0L195.2 63.0" stroke="#5fafff"/>
+<path d="M199.9 63.0L195.2 63.0M199.9 63.0L204.6 63.0" stroke="#5fafff"/>
+<path d="M209.3 63.0L204.6 63.0M209.3 63.0L214.0 63.0" stroke="#5fafff"/>
+<path d="M218.7 63.0L214.0 63.0M218.7 63.0L223.4 63.0" stroke="#5fafff"/>
+<path d="M228.1 63.0L223.4 63.0M228.1 63.0L232.8 63.0" stroke="#5fafff"/>
+<path d="M246.9 63.0L242.2 63.0M246.9 63.0L251.6 63.0" stroke="#5fafff"/>
+<path d="M265.7 63.0L261.0 63.0M265.7 63.0L270.4 63.0" stroke="#5fafff"/>
+<path d="M275.1 63.0L270.4 63.0M275.1 63.0L279.8 63.0" stroke="#5fafff"/>
+<path d="M284.5 63.0L279.8 63.0M284.5 63.0L289.2 63.0" stroke="#5fafff"/>
+<path d="M293.9 63.0L289.2 63.0M293.9 63.0L298.6 63.0" stroke="#5fafff"/>
+<path d="M303.3 63.0L298.6 63.0M303.3 63.0L308.0 63.0" stroke="#5fafff"/>
+<path d="M49.5 89.0L49.5 63.0M49.5 89.0L54.2 89.0" stroke="#496b4c"/>
+<path d="M58.9 89.0L54.2 89.0M58.9 89.0L63.6 89.0" stroke="#496b4c"/>
+<path d="M77.7 89.0L73.0 89.0M77.7 89.0L82.4 89.0" stroke="#496b4c"/>
+<path d="M96.5 89.0L91.8 89.0M96.5 89.0L101.2 89.0" stroke="#496b4c"/>
+<path d="M115.3 89.0L110.6 89.0M115.3 89.0L120.0 89.0" stroke="#496b4c"/>
+<path d="M124.7 89.0L124.7 63.0M124.7 89.0L120.0 89.0M124.7 89.0L129.4 89.0" stroke="#6b5a3c"/>
+<path d="M134.1 89.0L129.4 89.0M134.1 89.0L138.8 89.0" stroke="#6b5a3c"/>
+<path d="M152.9 89.0L148.2 89.0M152.9 89.0L157.6 89.0" stroke="#6b5a3c"/>
+<path d="M190.5 89.0L185.8 89.0M190.5 89.0L195.2 89.0" stroke="#6b5a3c"/>
+<path d="M209.3 89.0L204.6 89.0M209.3 89.0L214.0 89.0" stroke="#6b5a3c"/>
+<path d="M228.1 89.0L223.4 89.0M228.1 89.0L232.8 89.0" stroke="#6b5a3c"/>
+<path d="M237.5 89.0L232.8 89.0M237.5 89.0L242.2 89.0" stroke="#6b5a3c"/>
+<path d="M246.9 89.0L242.2 89.0M246.9 89.0L251.6 89.0" stroke="#6b5a3c"/>
+<path d="M256.3 89.0L256.3 63.0M256.3 89.0L251.6 89.0M256.3 89.0L261.0 89.0" stroke="#495a6e"/>
+<path d="M265.7 89.0L261.0 89.0M265.7 89.0L270.4 89.0" stroke="#495a6e"/>
+<path d="M284.5 89.0L279.8 89.0M284.5 89.0L289.2 89.0" stroke="#495a6e"/>
+<path d="M303.3 89.0L298.6 89.0M303.3 89.0L308.0 89.0" stroke="#495a6e"/>
+<path d="M312.7 89.0L312.7 63.0M312.7 89.0L308.0 89.0M312.7 89.0L317.4 89.0" stroke="#495a6e"/>
+<path d="M322.1 89.0L317.4 89.0M322.1 89.0L326.8 89.0" stroke="#d787d7"/>
+</g>
+<circle cx="30.7" cy="63.0" r="4.6" fill="#5fafff"/>
+<circle cx="49.5" cy="63.0" r="4.6" fill="#5fafff"/>
+<path d="M124.7 57.0L130.7 63.0L124.7 69.0L118.7 63.0Z" fill="#5fafff"/>
+<circle cx="237.5" cy="63.0" r="4.6" fill="#5fafff"/>
+<path d="M256.3 57.0L262.3 63.0L256.3 69.0L250.3 63.0Z" fill="#5fafff"/>
+<path d="M312.7 57.0L318.7 63.0L312.7 69.0L306.7 63.0Z" fill="#5fafff"/>
+<circle cx="87.1" cy="89.0" r="4.6" fill="#496b4c"/>
+<circle cx="105.9" cy="89.0" r="4.6" fill="#496b4c"/>
+<circle cx="199.9" cy="89.0" r="4.6" fill="#6b5a3c"/>
+<circle cx="218.7" cy="89.0" r="4.6" fill="#6b5a3c"/>
+<circle cx="293.9" cy="89.0" r="4.6" fill="#495a6e"/>
+<circle cx="331.5" cy="89.0" r="7" fill="#1c1d22" stroke="#ffd787" stroke-width="2"/><circle cx="331.5" cy="89.0" r="3.6" fill="#ffd787"/>
+<g font-family="SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="15.5" text-anchor="middle">
+<text x="359.7" y="68.0" fill="#5fafff">m</text>
+<text x="369.1" y="68.0" fill="#5fafff">a</text>
+<text x="378.5" y="68.0" fill="#5fafff">i</text>
+<text x="387.9" y="68.0" fill="#5fafff">n</text>
+<text x="68.3" y="94.0" fill="#87d787" font-weight="700">A</text>
+<text x="143.5" y="94.0" fill="#d7af5f" font-weight="700">B</text>
+<text x="162.3" y="94.0" fill="#6b5a3c">(</text>
+<text x="171.7" y="94.0" fill="#6b5a3c">4</text>
+<text x="181.1" y="94.0" fill="#6b5a3c">)</text>
+<text x="275.1" y="94.0" fill="#87afd7" font-weight="700">C</text>
+<text x="359.7" y="94.0" fill="#d787d7" font-weight="700">f</text>
+<text x="369.1" y="94.0" fill="#d787d7" font-weight="700">e</text>
+<text x="378.5" y="94.0" fill="#d787d7" font-weight="700">a</text>
+<text x="387.9" y="94.0" fill="#d787d7" font-weight="700">t</text>
+<text x="397.3" y="94.0" fill="#d787d7" font-weight="700">/</text>
+<text x="406.7" y="94.0" fill="#d787d7" font-weight="700">s</text>
+<text x="416.1" y="94.0" fill="#d787d7" font-weight="700">e</text>
+<text x="425.5" y="94.0" fill="#d787d7" font-weight="700">a</text>
+<text x="434.9" y="94.0" fill="#d787d7" font-weight="700">r</text>
+<text x="444.3" y="94.0" fill="#d787d7" font-weight="700">c</text>
+<text x="453.7" y="94.0" fill="#d787d7" font-weight="700">h</text>
+<text x="472.5" y="94.0" fill="#87d787">+</text>
+<text x="481.9" y="94.0" fill="#87d787">1</text>
+<text x="500.7" y="94.0" fill="#65666c">1</text>
+<text x="510.1" y="94.0" fill="#65666c">8</text>
+<text x="519.5" y="94.0" fill="#65666c">m</text>
+<text x="40.1" y="146.0" fill="#87d787" font-weight="700">A</text>
+<text x="68.3" y="146.0" fill="#65666c">f</text>
+<text x="77.7" y="146.0" fill="#65666c">e</text>
+<text x="87.1" y="146.0" fill="#65666c">a</text>
+<text x="96.5" y="146.0" fill="#65666c">t</text>
+<text x="105.9" y="146.0" fill="#65666c">/</text>
+<text x="115.3" y="146.0" fill="#65666c">n</text>
+<text x="124.7" y="146.0" fill="#65666c">a</text>
+<text x="134.1" y="146.0" fill="#65666c">v</text>
+<text x="185.8" y="146.0" fill="#65666c">已</text>
+<text x="204.6" y="146.0" fill="#65666c">合</text>
+<text x="223.4" y="146.0" fill="#65666c">并</text>
+<text x="256.3" y="146.0" fill="#c9ccd3">3</text>
+<text x="279.8" y="146.0" fill="#c9ccd3">次</text>
+<text x="298.6" y="146.0" fill="#c9ccd3">提</text>
+<text x="317.4" y="146.0" fill="#c9ccd3">交</text>
+<text x="350.3" y="146.0" fill="#c9ccd3">1</text>
+<text x="373.8" y="146.0" fill="#c9ccd3">个</text>
+<text x="392.6" y="146.0" fill="#c9ccd3">文</text>
+<text x="411.4" y="146.0" fill="#c9ccd3">件</text>
+<text x="444.3" y="146.0" fill="#87d787">+</text>
+<text x="453.7" y="146.0" fill="#87d787">3</text>
+<text x="481.9" y="146.0" fill="#65666c">−</text>
+<text x="491.3" y="146.0" fill="#65666c">0</text>
+<text x="519.5" y="146.0" fill="#65666c">9</text>
+<text x="533.6" y="146.0" fill="#65666c">月</text>
+<text x="547.7" y="146.0" fill="#65666c">3</text>
+<text x="557.1" y="146.0" fill="#65666c">0</text>
+<text x="571.2" y="146.0" fill="#65666c">日</text>
+<text x="604.1" y="146.0" fill="#c9ccd3">a</text>
+<text x="622.9" y="146.0" fill="#c9ccd3">n</text>
+<text x="632.3" y="146.0" fill="#c9ccd3">a</text>
+<text x="641.7" y="146.0" fill="#c9ccd3">v</text>
+<text x="660.5" y="146.0" fill="#c9ccd3">b</text>
+<text x="669.9" y="146.0" fill="#c9ccd3">a</text>
+<text x="679.3" y="146.0" fill="#c9ccd3">r</text>
+<text x="698.1" y="146.0" fill="#c9ccd3">o</text>
+<text x="707.5" y="146.0" fill="#c9ccd3">n</text>
+<text x="726.3" y="146.0" fill="#c9ccd3">e</text>
+<text x="735.7" y="146.0" fill="#c9ccd3">v</text>
+<text x="745.1" y="146.0" fill="#c9ccd3">e</text>
+<text x="754.5" y="146.0" fill="#c9ccd3">r</text>
+<text x="763.9" y="146.0" fill="#c9ccd3">y</text>
+<text x="782.7" y="146.0" fill="#c9ccd3">p</text>
+<text x="792.1" y="146.0" fill="#c9ccd3">a</text>
+<text x="801.5" y="146.0" fill="#c9ccd3">g</text>
+<text x="810.9" y="146.0" fill="#c9ccd3">e</text>
+<text x="40.1" y="172.0" fill="#d7af5f" font-weight="700">B</text>
+<text x="68.3" y="172.0" fill="#65666c">f</text>
+<text x="77.7" y="172.0" fill="#65666c">e</text>
+<text x="87.1" y="172.0" fill="#65666c">a</text>
+<text x="96.5" y="172.0" fill="#65666c">t</text>
+<text x="105.9" y="172.0" fill="#65666c">/</text>
+<text x="115.3" y="172.0" fill="#65666c">b</text>
+<text x="124.7" y="172.0" fill="#65666c">l</text>
+<text x="134.1" y="172.0" fill="#65666c">o</text>
+<text x="143.5" y="172.0" fill="#65666c">g</text>
+<text x="185.8" y="172.0" fill="#65666c">已</text>
+<text x="204.6" y="172.0" fill="#65666c">合</text>
+<text x="223.4" y="172.0" fill="#65666c">并</text>
+<text x="256.3" y="172.0" fill="#c9ccd3">7</text>
+<text x="279.8" y="172.0" fill="#c9ccd3">次</text>
+<text x="298.6" y="172.0" fill="#c9ccd3">提</text>
+<text x="317.4" y="172.0" fill="#c9ccd3">交</text>
+<text x="350.3" y="172.0" fill="#c9ccd3">1</text>
+<text x="373.8" y="172.0" fill="#c9ccd3">个</text>
+<text x="392.6" y="172.0" fill="#c9ccd3">文</text>
+<text x="411.4" y="172.0" fill="#c9ccd3">件</text>
+<text x="444.3" y="172.0" fill="#87d787">+</text>
+<text x="453.7" y="172.0" fill="#87d787">7</text>
+<text x="481.9" y="172.0" fill="#65666c">−</text>
+<text x="491.3" y="172.0" fill="#65666c">0</text>
+<text x="519.5" y="172.0" fill="#65666c">9</text>
+<text x="533.6" y="172.0" fill="#65666c">月</text>
+<text x="547.7" y="172.0" fill="#65666c">3</text>
+<text x="557.1" y="172.0" fill="#65666c">0</text>
+<text x="571.2" y="172.0" fill="#65666c">日</text>
+<text x="604.1" y="172.0" fill="#c9ccd3">a</text>
+<text x="622.9" y="172.0" fill="#c9ccd3">b</text>
+<text x="632.3" y="172.0" fill="#c9ccd3">l</text>
+<text x="641.7" y="172.0" fill="#c9ccd3">o</text>
+<text x="651.1" y="172.0" fill="#c9ccd3">g</text>
+<text x="669.9" y="172.0" fill="#c9ccd3">w</text>
+<text x="679.3" y="172.0" fill="#c9ccd3">i</text>
+<text x="688.7" y="172.0" fill="#c9ccd3">t</text>
+<text x="698.1" y="172.0" fill="#c9ccd3">h</text>
+<text x="716.9" y="172.0" fill="#c9ccd3">p</text>
+<text x="726.3" y="172.0" fill="#c9ccd3">o</text>
+<text x="735.7" y="172.0" fill="#c9ccd3">s</text>
+<text x="745.1" y="172.0" fill="#c9ccd3">t</text>
+<text x="763.9" y="172.0" fill="#c9ccd3">p</text>
+<text x="773.3" y="172.0" fill="#c9ccd3">a</text>
+<text x="782.7" y="172.0" fill="#c9ccd3">g</text>
+<text x="792.1" y="172.0" fill="#c9ccd3">e</text>
+<text x="801.5" y="172.0" fill="#c9ccd3">s</text>
+<text x="40.1" y="198.0" fill="#87afd7" font-weight="700">C</text>
+<text x="68.3" y="198.0" fill="#65666c">f</text>
+<text x="77.7" y="198.0" fill="#65666c">e</text>
+<text x="87.1" y="198.0" fill="#65666c">a</text>
+<text x="96.5" y="198.0" fill="#65666c">t</text>
+<text x="105.9" y="198.0" fill="#65666c">/</text>
+<text x="115.3" y="198.0" fill="#65666c">l</text>
+<text x="124.7" y="198.0" fill="#65666c">o</text>
+<text x="134.1" y="198.0" fill="#65666c">g</text>
+<text x="143.5" y="198.0" fill="#65666c">i</text>
+<text x="152.9" y="198.0" fill="#65666c">n</text>
+<text x="185.8" y="198.0" fill="#65666c">已</text>
+<text x="204.6" y="198.0" fill="#65666c">合</text>
+<text x="223.4" y="198.0" fill="#65666c">并</text>
+<text x="256.3" y="198.0" fill="#c9ccd3">2</text>
+<text x="279.8" y="198.0" fill="#c9ccd3">次</text>
+<text x="298.6" y="198.0" fill="#c9ccd3">提</text>
+<text x="317.4" y="198.0" fill="#c9ccd3">交</text>
+<text x="350.3" y="198.0" fill="#c9ccd3">1</text>
+<text x="373.8" y="198.0" fill="#c9ccd3">个</text>
+<text x="392.6" y="198.0" fill="#c9ccd3">文</text>
+<text x="411.4" y="198.0" fill="#c9ccd3">件</text>
+<text x="444.3" y="198.0" fill="#87d787">+</text>
+<text x="453.7" y="198.0" fill="#87d787">2</text>
+<text x="481.9" y="198.0" fill="#65666c">−</text>
+<text x="491.3" y="198.0" fill="#65666c">0</text>
+<text x="519.5" y="198.0" fill="#65666c">9</text>
+<text x="533.6" y="198.0" fill="#65666c">月</text>
+<text x="547.7" y="198.0" fill="#65666c">3</text>
+<text x="557.1" y="198.0" fill="#65666c">0</text>
+<text x="571.2" y="198.0" fill="#65666c">日</text>
+<text x="604.1" y="198.0" fill="#c9ccd3">l</text>
+<text x="613.5" y="198.0" fill="#c9ccd3">o</text>
+<text x="622.9" y="198.0" fill="#c9ccd3">g</text>
+<text x="641.7" y="198.0" fill="#c9ccd3">i</text>
+<text x="651.1" y="198.0" fill="#c9ccd3">n</text>
+<text x="669.9" y="198.0" fill="#c9ccd3">w</text>
+<text x="679.3" y="198.0" fill="#c9ccd3">i</text>
+<text x="688.7" y="198.0" fill="#c9ccd3">t</text>
+<text x="698.1" y="198.0" fill="#c9ccd3">h</text>
+<text x="716.9" y="198.0" fill="#c9ccd3">a</text>
+<text x="735.7" y="198.0" fill="#c9ccd3">f</text>
+<text x="745.1" y="198.0" fill="#c9ccd3">r</text>
+<text x="754.5" y="198.0" fill="#c9ccd3">i</text>
+<text x="763.9" y="198.0" fill="#c9ccd3">e</text>
+<text x="773.3" y="198.0" fill="#c9ccd3">n</text>
+<text x="782.7" y="198.0" fill="#c9ccd3">d</text>
+<text x="792.1" y="198.0" fill="#c9ccd3">l</text>
+<text x="801.5" y="198.0" fill="#c9ccd3">y</text>
+<text x="820.3" y="198.0" fill="#c9ccd3">e</text>
+<text x="829.7" y="198.0" fill="#c9ccd3">r</text>
+<text x="839.1" y="198.0" fill="#c9ccd3">r</text>
+<text x="848.5" y="198.0" fill="#c9ccd3">o</text>
+<text x="857.9" y="198.0" fill="#c9ccd3">r</text>
+<text x="44.8" y="250.0" fill="#65666c">更</text>
+<text x="63.6" y="250.0" fill="#65666c">多</text>
+<text x="82.4" y="250.0" fill="#65666c">：</text>
+<text x="96.5" y="250.0" fill="#65666c">g</text>
+<text x="105.9" y="250.0" fill="#65666c">i</text>
+<text x="115.3" y="250.0" fill="#65666c">t</text>
+<text x="134.1" y="250.0" fill="#65666c">l</text>
+<text x="143.5" y="250.0" fill="#65666c">o</text>
+<text x="152.9" y="250.0" fill="#65666c">g</text>
+<text x="171.7" y="250.0" fill="#65666c">m</text>
+<text x="181.1" y="250.0" fill="#65666c">a</text>
+<text x="190.5" y="250.0" fill="#65666c">i</text>
+<text x="199.9" y="250.0" fill="#65666c">n</text>
+<text x="209.3" y="250.0" fill="#65666c">.</text>
+<text x="218.7" y="250.0" fill="#65666c">.</text>
+<text x="232.8" y="250.0" fill="#65666c">分</text>
+<text x="251.6" y="250.0" fill="#65666c">支</text>
+<text x="270.4" y="250.0" fill="#65666c">名</text>
+<text x="312.7" y="250.0" fill="#65666c">·</text>
+<text x="350.3" y="250.0" fill="#65666c">g</text>
+<text x="359.7" y="250.0" fill="#65666c">i</text>
+<text x="369.1" y="250.0" fill="#65666c">t</text>
+<text x="387.9" y="250.0" fill="#65666c">d</text>
+<text x="397.3" y="250.0" fill="#65666c">i</text>
+<text x="406.7" y="250.0" fill="#65666c">f</text>
+<text x="416.1" y="250.0" fill="#65666c">f</text>
+<text x="434.9" y="250.0" fill="#65666c">-</text>
+<text x="444.3" y="250.0" fill="#65666c">-</text>
+<text x="453.7" y="250.0" fill="#65666c">s</text>
+<text x="463.1" y="250.0" fill="#65666c">t</text>
+<text x="472.5" y="250.0" fill="#65666c">a</text>
+<text x="481.9" y="250.0" fill="#65666c">t</text>
+<text x="500.7" y="250.0" fill="#65666c">m</text>
+<text x="510.1" y="250.0" fill="#65666c">a</text>
+<text x="519.5" y="250.0" fill="#65666c">i</text>
+<text x="528.9" y="250.0" fill="#65666c">n</text>
+<text x="538.3" y="250.0" fill="#65666c">.</text>
+<text x="547.7" y="250.0" fill="#65666c">.</text>
+<text x="557.1" y="250.0" fill="#65666c">.</text>
+<text x="571.2" y="250.0" fill="#65666c">分</text>
+<text x="590.0" y="250.0" fill="#65666c">支</text>
+<text x="608.8" y="250.0" fill="#65666c">名</text>
+</g>
+</svg>
