@@ -28,7 +28,8 @@ import unicodedata
 MAX_TRUNK = 14    # trunk commits to show
 MAX_LANE = 40     # commits to follow back along one branch
 MAX_COLS = 30     # columns to draw; a folded run counts as one column
-MAX_ROWS = 3      # branch rows under the trunk
+MAX_ROWS = 3      # branch rows under the trunk, when nothing is in progress
+MAX_OPEN = 8      # open branches each get a row, up to this many
 FOLD_OVER = 4     # a run longer than this on one branch is folded into "(n)"
 HISTORY = 2000    # commits read from git log
 
@@ -320,7 +321,7 @@ def build_lanes(r):
 # ------------------------------------------------------------------- layout
 
 def layout(r, trunk_commits, lanes):
-    """Pick columns (with folding) and rows. Returns (entries, col_of, rows_used, lanes, hidden)."""
+    """Pick columns (with folding) and rows. Returns (entries, col_of, rows_used, lanes, hidden names)."""
     head = r["head"]
     shown = set(trunk_commits)
     owner = {c: "trunk" for c in trunk_commits}
@@ -367,11 +368,12 @@ def layout(r, trunk_commits, lanes):
             for c in e[2]:
                 col_of[c] = i
 
-    # rows: open branches first (HEAD's branch and the newest ones win), then merged ones
+    # rows: every open branch gets one (up to MAX_OPEN; HEAD's branch and the newest win),
+    # then merged branches fill the gaps, adding rows only while there are fewer than MAX_ROWS
     open_lanes = [ln for ln in lanes if ln.join is None and any(c in col_of for c in ln.commits)]
     open_lanes.sort(key=lambda ln: (head not in ln.commits, -r["times"].get(ln.commits[-1], 0)))
-    hidden = max(0, len(open_lanes) - MAX_ROWS)
-    open_lanes = open_lanes[:MAX_ROWS]
+    hidden = [ln.name for ln in open_lanes[MAX_OPEN:]]
+    open_lanes = open_lanes[:MAX_OPEN]
     open_lanes.sort(key=lambda ln: r["times"].get(ln.commits[-1], 0))
     merged = [ln for ln in lanes if ln.join is not None
               and ln.join in col_of and any(c in col_of for c in ln.commits)]
@@ -395,7 +397,7 @@ def layout(r, trunk_commits, lanes):
                 ln.row = i + 1
                 break
         else:
-            if len(rows) < MAX_ROWS:
+            if len(rows) < (MAX_OPEN if ln.join is None else MAX_ROWS):
                 rows.append([(s, e)])
                 ln.row = len(rows)
         if ln.row:
@@ -581,7 +583,7 @@ def render(cwd, color=True, details=False):
             info = branch_info(r, name, paint) if name in r["refs"] else ""
             items.append(paint(code, name) + (" " + info if info else ""))
         if i == 0 and hidden:
-            items.append(paint(COLORS["dim"], f"+{hidden} more"))
+            items.append(paint(COLORS["dim"], f"+{len(hidden)} more: " + ", ".join(hidden)))
         line = s + (" " * (pad - n) + "  ".join(items) if items else "")
         out.append(line.rstrip())
     if tagged:
@@ -700,7 +702,8 @@ def legend(color=True):
         (COLORS["sync"], "↓1", "1 commit on the remote you haven't pulled (git pull)", "远程仓库有 1 次提交你还没拉下来（git pull）"),
         (COLORS["dirty"], "✎2", "2 files changed but not committed", "有 2 个文件改了还没提交"),
         (dim, "12m", "time since the last commit (m · h · d)", "距离这个分支上次提交过了多久（m 分钟 · h 小时 · d 天）"),
-        (dim, "+2 more", "2 more branches that didn't fit", "还有 2 个分支因为放不下没画出来"),
+        (dim, "+2 more", "2 more open branches that didn't fit, listed by name",
+         "还有 2 个进行中的分支放不下，后面列出它们的名字"),
     ]
     out = []
     for code, sym, en, zh in rows:
