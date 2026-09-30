@@ -34,7 +34,8 @@ main is always the top row. Each branch occupies a span of time, from where it f
 
 - Branches whose spans don't overlap can share a row, the way meetings at different times can share a room.
 - An open branch's span runs to the right edge, so each open branch gets its own row.
-- At most three rows are drawn. The rest show up as `+N more` next to main, and the branch you're on is always drawn.
+- Open branches come first and each gets a row, up to eight, so five subagents at work means five rows. Merged branches only fill the gaps, and add rows only while there are fewer than three. Once the work is merged, the graph shrinks back.
+- Past eight open branches, the rest are listed by name as `+N more: …` next to main. The branch you're on is always drawn.
 
 ### 4. Draw on a character grid
 

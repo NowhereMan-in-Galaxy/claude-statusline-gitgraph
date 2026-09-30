@@ -36,7 +36,7 @@ It also nudges good habits, especially if you're new to git: commit in small ste
 - **Just enough numbers.** `+3 −1` shows how far a branch is ahead of and behind main, `↑2 ↓1` compares it with its remote, `✎2` counts uncommitted files, and `12m` is the time since the last commit.
 - **Details on demand.** `gitgraph log` letters each branch segment and tells you what it did.
 - **Teaches git.** `gitgraph learn` is a 17-step, hands-on git tutorial that runs in a throwaway sandbox. Every command is annotated, and you watch the graph change as you go.
-- **Shows teamwork.** `gitgraph demo` plays out a project where a lead agent hands work to three subagents, each on its own branch, until everything is merged and pushed.
+- **Shows teamwork.** `gitgraph demo` plays out a project where a lead agent hands work to five subagents, each on its own branch, until everything is merged and pushed.
 - **Zero dependencies.** One Python file, standard library only. All you need is `git` and `python3`.
 - **English and Chinese.** The language follows your system, and `--en` / `--zh` switch it.
 
@@ -116,8 +116,8 @@ It ends with a page of good habits and an everyday-commands cheat sheet. Everyth
 
 What does a repository look like when several agents work on it at once? `demo` plays it out in nine steps, in a sandbox that is deleted afterwards:
 
-1. A lead agent hands a cart, a checkout page and a user guide to three subagents. Each gets its own `git worktree`: a separate folder on its own branch, so they never overwrite each other's files.
-2. The subagents commit side by side, and three rows grow under main.
+1. A lead agent hands a cart, checkout, search, checkout tests and a user guide to five subagents. Each gets its own `git worktree`: a separate folder on its own branch, so they never overwrite each other's files.
+2. The subagents commit side by side, and five rows grow under main: every open branch gets its own row, so none is hidden.
 3. A teammate pushes a fix, and every open branch shows `−1`.
 4. The lead agent reviews and merges the branches one by one. One subagent still has an uncommitted edit (`✎1`).
 5. Everything is merged and pushed: no open rows, no `↑`.
@@ -148,7 +148,7 @@ What does a repository look like when several agents work on it at once? `demo` 
 | `↑2` / `↓1` | 2 commits to push / 1 to pull |
 | `✎2` | 2 files changed but not committed |
 | `1h` | time since the branch's last commit (m · h · d) |
-| `+2 more` | 2 more branches that didn't fit |
+| `+2 more: a, b` | more open branches than `MAX_OPEN`; the ones not drawn, by name |
 | **bold name** | the branch you're on |
 
 ## Options
@@ -156,7 +156,8 @@ What does a repository look like when several agents work on it at once? `demo` 
 | Constant in `gitgraph.py` | Default | Controls |
 |---|---|---|
 | `MAX_COLS` | 30 | how many columns to draw (the graph's width) |
-| `MAX_ROWS` | 3 | how many branch rows under main |
+| `MAX_ROWS` | 3 | branch rows under main when nothing is in progress; merged branches only use these |
+| `MAX_OPEN` | 8 | open branches each get a row, up to this many |
 | `FOLD_OVER` | 4 | fold runs longer than this |
 | `THEMES` | — | the color themes, as 256-color codes |
 
@@ -228,7 +229,7 @@ The images in this README are generated from real `gitgraph` output by `python3 
 - **信息刚好够用**：`+3 −1` 是比 main 多几次、少几次提交，`↑2 ↓1` 是和远程仓库差几次提交，`✎2` 是有几个文件改了还没提交，`12m` 是离上次提交过了多久。
 - **想看细节随时看**：`gitgraph log` 给每一段分支标上字母，并逐段说明它做了什么。
 - **顺便学会 git**：`gitgraph learn` 是一套 17 步的 git 入门教程，在临时的练习仓库里动手操作。每条命令都有注释，每一步都能看到图的变化。
-- **看懂多人协作**：`gitgraph demo` 模拟一个项目：主代理把任务分给三个子代理，各开一个分支并行做，最后全部合并、推送。
+- **看懂多人协作**：`gitgraph demo` 模拟一个项目：主代理把任务分给五个子代理，各开一个分支并行做，最后全部合并、推送。
 - **零依赖**：一个 Python 文件，只用标准库，有 `git` 和 `python3` 就能跑。
 - **中英双语**：默认跟随系统语言，用 `--zh` / `--en` 切换。
 
@@ -315,8 +316,8 @@ esac
 
 好几个 agent 同时改一个仓库时，仓库里会是什么样？`demo` 用九步演示一遍，同样在临时仓库里进行，结束后删除：
 
-1. 主代理把购物车、结算页和使用说明分给三个子代理。每个子代理有自己的 `git worktree`：一个单独的文件夹，检出自己的分支，所以不会互相覆盖文件。
-2. 子代理们并行提交，main 下面长出三行。
+1. 主代理把购物车、结算页、搜索、结算测试和使用说明分给五个子代理。每个子代理有自己的 `git worktree`：一个单独的文件夹，检出自己的分支，所以不会互相覆盖文件。
+2. 子代理们并行提交，main 下面长出五行：每个还开着的分支都有自己的一行，一个都不会被藏起来。
 3. 同事推送了一个修复，每个还开着的分支都显示 `−1`。
 4. 主代理逐个检查并合并。有一个子代理还有没提交的改动（`✎1`）。
 5. 全部合并并推送：没有还开着的行，也没有 `↑`。
@@ -347,7 +348,7 @@ esac
 | `↑2` / `↓1` | 还有 2 次提交没推送 / 远程有 1 次提交没拉下来 |
 | `✎2` | 有 2 个文件改了还没提交 |
 | `1h` | 离这个分支上次提交过了多久（m 分钟 · h 小时 · d 天） |
-| `+2 more` | 还有 2 个分支放不下没画出来 |
+| `+2 more: a, b` | 进行中的分支超过了 `MAX_OPEN`，后面列出没画出来的分支名 |
 | **加粗的分支名** | 你现在所在的分支 |
 
 ## 调整
@@ -355,7 +356,8 @@ esac
 | `gitgraph.py` 里的常量 | 默认 | 作用 |
 |---|---|---|
 | `MAX_COLS` | 30 | 最多画多少列，决定图有多宽 |
-| `MAX_ROWS` | 3 | main 下面最多画几行分支 |
+| `MAX_ROWS` | 3 | 没有进行中的工作时 main 下面画几行；已合并的旧分支只用这些行 |
+| `MAX_OPEN` | 8 | 进行中的分支每个占一行，最多这么多行 |
 | `FOLD_OVER` | 4 | 一个分支连续超过几次提交就折叠 |
 | `THEMES` | — | 各个配色主题（终端 256 色编号） |
 
