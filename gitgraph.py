@@ -10,6 +10,7 @@ merged, curving back in at its merge commit.
     python3 gitgraph.py log [PATH]     the graph with each branch segment explained
     python3 gitgraph.py legend         what every symbol means
     python3 gitgraph.py learn          a guided tour in a throwaway sandbox repository
+    python3 gitgraph.py demo           a simulated team with subagents working in parallel
 
 Only the Python standard library is used.
 """
@@ -931,6 +932,181 @@ def learn(pause=True, color=True):
         shutil.rmtree(box, ignore_errors=True)
 
 
+# --------------------------------------------------------------------- demo
+
+def demo(pause=True, color=True):
+    """A simulated team: you, a lead agent and three subagents building one project."""
+    p = Paint(color)
+    dim = COLORS["dim"]
+    box = tempfile.mkdtemp(prefix="gitgraph-demo-")
+    repo = os.path.join(box, "shop")              # your folder, on main
+    remote = os.path.join(box, "github.git")      # stands in for GitHub
+    mate = os.path.join(box, "teammate")          # a teammate's clone
+    os.makedirs(repo)
+    clock = [int(time.time()) - 6 * 3600]
+    env = dict(os.environ,
+               GIT_AUTHOR_NAME="demo", GIT_AUTHOR_EMAIL="demo@example.com",
+               GIT_COMMITTER_NAME="demo", GIT_COMMITTER_EMAIL="demo@example.com",
+               GIT_CONFIG_COUNT="2",
+               GIT_CONFIG_KEY_0="commit.gpgsign", GIT_CONFIG_VALUE_0="false",
+               GIT_CONFIG_KEY_1="advice.defaultBranchName", GIT_CONFIG_VALUE_1="false",
+               LANG="C", LC_ALL="C")
+    agents = {"cart": "feat/cart", "checkout": "feat/checkout", "docs": "docs/guide"}
+
+    def sh(command, cwd=repo):
+        clock[0] += 4 * 60
+        env["GIT_AUTHOR_DATE"] = env["GIT_COMMITTER_DATE"] = f"{clock[0]} +0000"
+        subprocess.run(command, shell=True, cwd=cwd, env=env, capture_output=True, text=True)
+
+    def run(who, command, note="", cwd=repo):
+        sh(command, cwd)
+        line = "  " + p("1", pad(who, 16)) + p(dim, "$ ") + command
+        if note:
+            line += " " * max(2, 44 - width_of(command)) + p(dim, "# " + note)
+        print(line)
+
+    def work(agent, path, message):
+        """A subagent edits a file in its own worktree and commits."""
+        folder = os.path.join(box, "agent-" + agent)
+        with open(os.path.join(folder, path), "a", encoding="utf-8") as f:
+            f.write(message + "\n")
+        run(tr(f"{agent} agent", f"{agent} 子代理"), f'git commit -am "{message}"', cwd=folder)
+
+    def setup():
+        for path, message in (("index.html", "feat: add the home page"),
+                              ("products.html", "feat: list the products"),
+                              ("style.css", "feat: add basic styles")):
+            with open(os.path.join(repo, path), "w", encoding="utf-8") as f:
+                f.write(message + "\n")
+            sh(f'git add {path} && git commit -q -m "{message}"')
+        for agent in agents:
+            with open(os.path.join(repo, {"cart": "cart.js", "checkout": "checkout.js",
+                                          "docs": "GUIDE.md"}[agent]), "w", encoding="utf-8") as f:
+                f.write("\n")
+        sh('git add -A && git commit -q -m "chore: add empty files for the next features"')
+        sh(f"git init -q --bare {remote}", cwd=box)
+        sh(f"git remote add origin {remote} && git push -q -u origin main")
+        print("  " + p(dim, tr("(a small shop site: 4 commits on main, already pushed to GitHub)",
+                               "（一个小网店项目：main 上已有 4 次提交，并且已经推送到 GitHub）")))
+
+    def s_split():
+        print("  " + p("1", pad(tr("you", "你"), 16)) +
+              tr("\"Add a cart, a checkout page and a user guide. Use subagents.\"",
+                 "「加购物车、结算页和使用说明，用 subagent 并行做」"))
+        for agent, branch in agents.items():
+            run(tr("lead agent", "主代理"), f"git worktree add -b {branch} ../agent-{agent}",
+                tr("own folder + own branch", "独立文件夹 + 独立分支"))
+
+    def s_first():
+        work("cart", "cart.js", "feat: add items to the cart")
+        work("docs", "GUIDE.md", "docs: how to place an order")
+        work("checkout", "checkout.js", "feat: add the checkout form")
+
+    def s_parallel():
+        work("cart", "cart.js", "feat: change item quantity")
+        work("checkout", "checkout.js", "feat: validate the address")
+        work("cart", "cart.js", "fix: keep the cart after reload")
+        work("checkout", "checkout.js", "feat: add card payment")
+
+    def s_teammate():
+        sh(f"git clone -q {remote} {mate}", cwd=box)
+        with open(os.path.join(mate, "products.html"), "a", encoding="utf-8") as f:
+            f.write("fix\n")
+        sh('git commit -qam "fix: wrong price on the product page" && git push -q', cwd=mate)
+        print("  " + p("1", pad(tr("teammate", "同事"), 16)) +
+              p(dim, tr("fixed a price bug on their laptop and pushed it", "在自己电脑上修了一个价格 bug 并推送")))
+        run(tr("you", "你"), "git pull", tr("bring main up to date", "把 main 更新到最新"))
+
+    def s_merge_docs():
+        run(tr("lead agent", "主代理"), "git diff main...docs/guide --stat", tr("review first", "合并前先看改了什么"))
+        run(tr("lead agent", "主代理"), "git merge --no-ff docs/guide -m \"Merge branch 'docs/guide'\"")
+        run(tr("lead agent", "主代理"), "git worktree remove ../agent-docs && git branch -d docs/guide",
+            tr("clean up", "收尾：删掉文件夹和分支名"))
+
+    def s_merge_cart():
+        run(tr("lead agent", "主代理"), "git merge --no-ff feat/cart -m \"Merge branch 'feat/cart'\"")
+        run(tr("lead agent", "主代理"), "git worktree remove ../agent-cart && git branch -d feat/cart")
+        folder = os.path.join(box, "agent-checkout")
+        with open(os.path.join(folder, "checkout.js"), "a", encoding="utf-8") as f:
+            f.write("// retry on network errors\n")
+        print("  " + p("1", pad(tr("checkout agent", "checkout 子代理"), 16)) +
+              p(COLORS["dirty"], tr("✎ still editing checkout.js, not committed yet",
+                                    "✎ 还在改 checkout.js，没有提交")))
+
+    def s_finish():
+        work("checkout", "checkout.js", "feat: retry on network errors")
+        run(tr("lead agent", "主代理"), "git merge --no-ff feat/checkout -m \"Merge branch 'feat/checkout'\"")
+        run(tr("lead agent", "主代理"), "git worktree remove ../agent-checkout && git branch -d feat/checkout")
+
+    def s_push():
+        run(tr("you", "你"), "git push", tr("back up the finished work", "把做完的工作备份到 GitHub"))
+
+    steps = [
+        (tr("The starting point", "起点"), setup, repo, tr(
+            "One trunk, nothing open. ◉ is where you are.",
+            "只有一条主线，没有进行中的分支。◉ 是你现在的位置。")),
+        (tr("The lead agent splits the work", "主代理把任务拆给三个子代理"), s_split, repo, tr(
+            "A worktree is a second folder attached to the same repository, checked out on its own branch.\n"
+            "Each subagent works in its own folder, so they never overwrite each other's files.\n"
+            "No new rows yet: a new branch is only a name, sitting on main's last commit until someone commits on it.",
+            "worktree 是挂在同一个仓库上的另一个文件夹，它检出自己的分支。\n"
+            "每个子代理在自己的文件夹里干活，所以不会互相覆盖文件。\n"
+            "还没有新的行：分支在有人提交之前只是一个名字，挂在 main 最后一个提交上。")),
+        (tr("Each subagent commits", "三个子代理各自提交"), s_first, repo, tr(
+            "Three rows appear, one per subagent. ├ means they all started from the same commit.",
+            "出现了三行，每个子代理一行。├ 表示它们都从同一个提交分出去。")),
+        (tr("They keep going, side by side", "它们继续并行工作"), s_parallel, repo, tr(
+            "+n is how many commits each branch has that main doesn't: how far each job has got.",
+            "+n 表示这个分支比 main 多几次提交，也就是每件活干到了哪里。")),
+        (tr("A teammate pushes a fix", "同事推送了一个修复"), s_teammate, repo, tr(
+            "main moved on, so every open branch now shows −1: main has a commit they don't.",
+            "main 往前走了，所以每个还开着的分支都显示 −1：main 有一次提交是它们没有的。")),
+        (tr("The guide is done: review and merge", "说明文档做完了：检查后合并"), s_merge_docs, repo, tr(
+            "◆ is the merge. The merged branch dims and curves back into main with ╯.\n"
+            "↑2: the merge and the guide's commit are only on your machine so far, not on GitHub.",
+            "◆ 是合并提交。合并完的分支变暗，用 ╯ 弯回主线。\n"
+            "↑2：这次合并和文档的提交目前只在你的电脑上，GitHub 上还没有。")),
+        (tr("The cart is merged; checkout is still busy", "购物车合并了；结算页还在忙"), s_merge_cart, os.path.join(box, "agent-checkout"), tr(
+            "This graph is drawn from the checkout agent's folder, so ◉ sits on its branch.\n"
+            "✎1: one file changed and not committed. If the agent stopped now, that work would be easy to lose.",
+            "这张图是从 checkout 子代理的文件夹里画的，所以 ◉ 在它的分支上。\n"
+            "✎1：有一个文件改了还没提交。子代理这时候中断的话，这部分最容易丢。")),
+        (tr("Checkout is done too", "结算页也做完了"), s_finish, repo, tr(
+            "Three merges, one per subagent. No open rows left: nothing half-finished.",
+            "三次合并，每个子代理一次。没有还开着的行，说明没有半截的工作。")),
+        (tr("Push", "推送"), s_push, repo, tr(
+            "↑ is gone: GitHub has everything. That's a clean finish.",
+            "↑ 消失了：GitHub 上什么都有了。这就是一个干净的收尾。")),
+    ]
+
+    try:
+        print(p("1", tr("gitgraph demo", "gitgraph 演示")) +
+              p(dim, tr("  (a simulated team with subagents, in a temp folder deleted at the end)",
+                        "  （模拟一个有子代理的团队项目，放在临时目录里，结束后自动删除）")))
+        sh("git init -q -b main")
+        for n, (name, action, where, note) in enumerate(steps, 1):
+            print()
+            print(p("1", tr(f"Step {n}/{len(steps)}  {name}", f"第 {n}/{len(steps)} 步  {name}")))
+            action()
+            graph = render(where, color)
+            if graph:
+                print()
+                for line in graph.splitlines():
+                    print("    " + line)
+            print()
+            for line in note.splitlines():
+                print("  " + line)
+            if pause and sys.stdin.isatty():
+                input(p(dim, tr("\n  Press Enter to continue ⏎ ", "\n  按回车继续 ⏎ ")))
+        print()
+        print("  " + tr("In your own project, the status line shows the same picture while agents work.",
+                        "在你自己的项目里，agent 干活时状态栏会实时显示同样的图。"))
+    except (KeyboardInterrupt, EOFError):
+        print()
+    finally:
+        shutil.rmtree(box, ignore_errors=True)
+
+
 # ---------------------------------------------------------------------- cli
 
 def main(argv):
@@ -947,6 +1123,8 @@ def main(argv):
         print(out or tr("not inside a git repository", "这里不是 git 仓库"))
     elif args[:1] == ["learn"]:
         learn(pause="--no-pause" not in argv, color=color)
+    elif args[:1] == ["demo"]:
+        demo(pause="--no-pause" not in argv, color=color)
     elif "--statusline" in argv:
         try:
             data = json.load(sys.stdin)
