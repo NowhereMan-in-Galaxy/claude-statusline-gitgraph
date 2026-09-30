@@ -170,6 +170,9 @@ What does a repository look like when several agents work on it at once? `demo` 
   | `mint` | silver and green: a silver trunk, branches in shades of green (for dark terminals) |
   | `quiet` | one color for all branches; only `✎` and `↑`, the things to act on, stand out |
   | `colorblind` | Okabe-Ito colors, one color for all branches, blue/orange instead of green/red |
+  | `terminal` | your terminal's own 16 colors, so its theme decides the shades |
+
+  Light or dark follows your system: `default`, `quiet` and `colorblind` switch to a light version when the system is in light mode (read from `COLORFGBG` if the terminal sets it, otherwise from the macOS, Windows or GNOME setting). Set `GITGRAPH_APPEARANCE=light` or `dark` to choose yourself.
 
   ![gitgraph themes](docs/themes.svg)
 
@@ -366,6 +369,9 @@ esac
   | `mint` 银绿 | 主线银色，分支是深浅不同的绿色（适合深色终端） |
   | `quiet` 素净 | 所有分支同一种颜色，只有需要你处理的 `✎` 和 `↑` 是醒目的橙色 |
   | `colorblind` 色弱友好 | 用 Okabe-Ito 色盲友好配色，分支同一种颜色，用蓝/橙代替绿/红 |
+  | `terminal` 跟随终端配色 | 只用终端自带的 16 种颜色，具体深浅由你的终端主题决定 |
+
+  深色/浅色会跟随系统：系统是浅色模式时，`default`、`quiet`、`colorblind` 会自动换成浅色版。判断顺序：终端提供了 `COLORFGBG` 就用它，否则读 macOS、Windows 或 GNOME 的系统设置。想手动指定，就设置 `GITGRAPH_APPEARANCE=light` 或 `dark`。
 
   ![gitgraph themes](docs/themes.svg)
 
