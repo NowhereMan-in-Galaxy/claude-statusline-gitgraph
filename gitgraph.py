@@ -599,7 +599,8 @@ def learn(pause=True, color=True):
          "◉ 是你现在所在的位置（叫 HEAD）。第一行永远是主线 main。"),
         ("开一个新分支",
          lambda: run("git switch -c feat/login"),
-         "分支就是给某个存档点起了一个新名字。它现在和 main 指着同一个点，\n"
+         "开分支不是提交，不会多出新的 ●。分支只是给当前这个存档点起了一个新名字，\n"
+         "并且让你之后的提交都记在这个名字下面。它现在和 main 指着同一个点，\n"
          "所以图上还没有新的线，只是 main 旁边多了 feat/login 这个名字。"),
         ("在分支上提交两次",
          lambda: (commit("写登录表单", "login.txt"), commit("接上登录接口", "login.txt")),
