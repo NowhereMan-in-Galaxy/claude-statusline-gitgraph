@@ -15,6 +15,7 @@
 git clone https://github.com/NowhereMan-in-Galaxy/claude-statusline-gitgraph.git ~/tools/claude-statusline-gitgraph
 cd ~/tools/claude-statusline-gitgraph
 
+python3 gitgraph.py log              # 详情：每一段分支做了什么、改了多少
 python3 gitgraph.py learn            # 学习模式：跟着走一遍分支的日常用法
 python3 gitgraph.py legend           # 符号表：每个符号是什么意思
 python3 gitgraph.py ~/your/project   # 画出某个仓库的分支图
@@ -43,6 +44,32 @@ python3 gitgraph.py ~/your/project   # 画出某个仓库的分支图
 ```bash
 printf '\n%s' "$(python3 ~/tools/claude-statusline-gitgraph/gitgraph.py "$cwd")"
 ```
+
+## 看每一段做了什么：`log`
+
+状态栏平时保持简洁。想看细节时运行 `log`：图上每一段分支会标一个字母，下面逐段列出它的状态、提交数、改动量、时间，以及它做了什么（已合并的分支用合并说明，没合并的用最近一次提交的说明）：
+
+```
+●─●───────●─◆───────────◆─●─────────●    main
+  ╰─A─●─●───┴─B─(5)─●─●─╯ ├─C─●          feat/search +2 −1
+                          ╰─────D─●───◉  feat/theme +3 −1 ✎2 1h
+
+ A  feat/login   merged  3 commits  2 files   +96   −4  Sep 26 → Sep 27  Log-in page and API
+ B  feat/api     merged  8 commits  6 files  +340  −41  Sep 27 → Sep 28  Connect the backend API
+ C  feat/search  open    2 commits  1 file    +30   −0  Sep 29 → now     Add a search box
+ D  feat/theme   open    3 commits  2 files   +55   −4  Sep 29 → now     Dark mode icons
+
+ more: git log main..<branch>   ·   git diff --stat main...<branch>
+```
+
+把它做成一个短命令会更顺手，比如放一个可执行文件到 `~/.local/bin/gitgraph`：
+
+```sh
+#!/bin/sh
+exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" log "$@"
+```
+
+之后在任何终端里输入 `gitgraph` 就能看；在 Claude Code 里输入 `! gitgraph`。
 
 ## 看懂这张图
 

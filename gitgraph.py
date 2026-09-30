@@ -7,6 +7,7 @@ merged, curving back in at its merge commit.
 
     python3 gitgraph.py [PATH]         draw the graph for the repository at PATH
     python3 gitgraph.py --statusline   same, reading Claude Code's status line JSON on stdin
+    python3 gitgraph.py log [PATH]     the graph with each branch segment explained
     python3 gitgraph.py legend         what every symbol means
     python3 gitgraph.py learn          a guided tour in a throwaway sandbox repository
 
@@ -329,7 +330,7 @@ def branch_info(r, name, paint):
     return " ".join(parts)
 
 
-def render(cwd, color=True):
+def render(cwd, color=True, details=False):
     paint = Paint(color)
     r = read_repo(cwd)
     if not r:
@@ -397,6 +398,17 @@ def render(cwd, color=True):
             grid.put(ln.row, x, "─", code)
         draw_nodes(ln.commits, ln.row, code)
 
+    # details mode: tag each branch segment with a letter, explained below the graph
+    tagged = []
+    if details:
+        for ln in sorted(lanes, key=lambda l: min(col_of[c] for c in l.commits if c in col_of)):
+            spot = next((c for c in ln.commits if c in col_of and c != head
+                         and entries[col_of[c]][0] == "c"), None)
+            if spot and len(tagged) < 26:
+                letter = chr(ord("A") + len(tagged))
+                grid.text(ln.row, xs[col_of[spot]], letter, "1;" + ln.color)
+                tagged.append((letter, ln))
+
     # labels: branch names and their info, aligned in one column
     labels = {i: [] for i in range(nrows + 1)}
     if r["trunk"] in r["refs"]:
@@ -424,7 +436,84 @@ def render(cwd, color=True):
             items.append(paint(COLORS["dim"], f"+{hidden} more"))
         line = s + (" " * (pad - n) + "  ".join(items) if items else "")
         out.append(line.rstrip())
+    if tagged:
+        out += [""] + segment_table(cwd, r, tagged, paint)
     return "\n".join(out)
+
+
+def merge_summary(subject):
+    """Split a merge commit subject into (branch name, what it did)."""
+    if subject.startswith("Merge branch '"):
+        name, _, rest = subject[len("Merge branch '"):].partition("'")
+        rest = rest.lstrip(" :")
+        if rest.startswith("into "):
+            rest = ""
+        return name, rest
+    for prefix in ("merge: ", "Merge: "):
+        if subject.startswith(prefix):
+            return "", subject[len(prefix):]
+    if subject.startswith("Merge pull request"):
+        return "", ""
+    return "", subject
+
+
+def short_stat(cwd, base, tip):
+    words = git(cwd, "diff", "--shortstat", base, tip).replace(",", "").split()
+    files = plus = minus = 0
+    for i, w in enumerate(words):
+        if w.startswith("file"):
+            files = int(words[i - 1])
+        elif w.startswith("insertion"):
+            plus = int(words[i - 1])
+        elif w.startswith("deletion"):
+            minus = int(words[i - 1])
+    text = f"{files} file" + ("s" if files != 1 else "")
+    return text, plus, minus
+
+
+def segment_table(cwd, r, tagged, paint):
+    """One line per tagged branch segment: what it is, how big, when, and what it did."""
+    rows = []
+    for letter, ln in tagged:
+        first, tip = ln.commits[0], ln.commits[-1]
+        subject = lambda c: git(cwd, "log", "-1", "--format=%s", c)
+        if ln.join:
+            name, what = merge_summary(subject(ln.join))
+            state = "merged"
+        else:
+            name, what, state = ln.name, "", "open"
+        what = what or subject(tip)
+        base = ln.fork or (r["parents"].get(first) or [first])[0]
+        files, plus, minus = short_stat(cwd, base, tip)
+        day = lambda c: time.strftime("%b %d", time.localtime(r["times"].get(c, 0))).replace(" 0", " ")
+        start, end = day(first), ("now" if state == "open" else day(tip))
+        when = start if start == end else f"{start} → {end}"
+        n = len(ln.commits)
+        rows.append({
+            "letter": (letter, "1;" + ln.color),
+            "name": (name or "·", ln.color if state == "open" else COLORS["dim"]),
+            "state": (state, COLORS["ahead"] if state == "open" else COLORS["dim"]),
+            "size": (f"{n} commit" + ("s" if n != 1 else ""), ""),
+            "files": (files, ""),
+            "plus": (f"+{plus}", COLORS["ahead"]),
+            "minus": (f"−{minus}", COLORS["behind"]),
+            "when": (when, COLORS["dim"]),
+            "what": (what if len(what) <= 64 else what[:63] + "…", ""),
+        })
+    keys = ["letter", "name", "state", "size", "files", "plus", "minus", "when", "what"]
+    width = {k: max(len(row[k][0]) for row in rows) for k in keys}
+    right = {"plus", "minus"}
+    out = []
+    for row in rows:
+        cells = []
+        for k in keys:
+            text, code = row[k]
+            padded = text.rjust(width[k]) if k in right else text.ljust(width[k])
+            cells.append(paint(code, padded) if k != "what" else paint(code, text))
+        out.append(" " + "  ".join(cells).rstrip())
+    out.append("")
+    out.append(paint(COLORS["dim"], " more: git log main..<branch>   ·   git diff --stat main...<branch>"))
+    return out
 
 
 # ------------------------------------------------------------------- legend
@@ -570,6 +659,9 @@ def main(argv):
         print(__doc__.strip())
     elif args[:1] == ["legend"]:
         print(legend(color))
+    elif args[:1] == ["log"]:
+        out = render(args[1] if len(args) > 1 else ".", color, details=True)
+        print(out or "not inside a git repository")
     elif args[:1] == ["learn"]:
         learn(pause="--no-pause" not in argv, color=color)
     elif "--statusline" in argv:
