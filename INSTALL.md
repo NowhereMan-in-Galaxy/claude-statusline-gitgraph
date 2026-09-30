@@ -47,8 +47,8 @@ Create `~/.local/bin/gitgraph`:
 ```sh
 #!/bin/sh
 case "$1" in
-  learn|legend|log|demo|themes) exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" "$@" --color ;;
-  *)                            exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" log --color "$@" ;;
+  learn|legend|log|demo|themes|theme) exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" "$@" --color ;;
+  *)                                  exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" log --color "$@" ;;
 esac
 ```
 

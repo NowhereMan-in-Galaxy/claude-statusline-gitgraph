@@ -89,8 +89,8 @@ To make it a one-word command, save this as `~/.local/bin/gitgraph` and make it 
 ```sh
 #!/bin/sh
 case "$1" in
-  learn|legend|log|demo|themes) exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" "$@" --color ;;
-  *)                            exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" log --color "$@" ;;
+  learn|legend|log|demo|themes|theme) exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" "$@" --color ;;
+  *)                                  exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" log --color "$@" ;;
 esac
 ```
 
@@ -161,7 +161,7 @@ What does a repository look like when several agents work on it at once? `demo` 
 | `THEMES` | — | the color themes, as 256-color codes |
 
 - **Color.** When the output is captured (piped into a file or another script), color is turned off. If the receiver can show color, as your own status line script or Claude Code's `!` can, pass `--color`. `--no-color` or `NO_COLOR=1` turns it off.
-- **Theme.** Too colorful? `gitgraph themes` draws your repository in every theme. Pick one with `--theme=NAME` (add it to the status line command too), or set `GITGRAPH_THEME=NAME`.
+- **Theme.** Too colorful? `gitgraph themes` draws your repository in every theme. Switch with `gitgraph theme NAME`: it's saved in `~/.config/gitgraph/theme`, and the status line picks it up on its next refresh. `--theme=NAME` or `GITGRAPH_THEME=NAME` override it for one command.
 
   | Theme | Look |
   |---|---|
@@ -285,8 +285,8 @@ printf '\n%s' "$(python3 ~/tools/claude-statusline-gitgraph/gitgraph.py --color 
 ```sh
 #!/bin/sh
 case "$1" in
-  learn|legend|log|demo|themes) exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" "$@" --color ;;
-  *)                            exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" log --color "$@" ;;
+  learn|legend|log|demo|themes|theme) exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" "$@" --color ;;
+  *)                                  exec python3 "$HOME/tools/claude-statusline-gitgraph/gitgraph.py" log --color "$@" ;;
 esac
 ```
 
@@ -360,7 +360,7 @@ esac
 | `THEMES` | — | 各个配色主题（终端 256 色编号） |
 
 - **颜色**：输出被其他程序接走时（比如存进文件、交给另一个脚本）会自动去掉颜色。如果接收方能显示颜色，比如你自己的状态栏脚本或 Claude Code 里的 `!` 命令，就加上 `--color`。`--no-color` 或环境变量 `NO_COLOR=1` 可以关闭颜色。
-- **配色主题**：觉得颜色太花？运行 `gitgraph themes`，会用每个主题把你的仓库各画一遍。选定后在命令后加 `--theme=名字`（状态栏的命令里也加上），或者设置环境变量 `GITGRAPH_THEME=名字`。
+- **配色主题**：觉得颜色太花？运行 `gitgraph themes`，会用每个主题把你的仓库各画一遍。用 `gitgraph theme 名字` 切换：设置保存在 `~/.config/gitgraph/theme`，状态栏下次刷新就会生效。临时想用别的主题，可以在命令后加 `--theme=名字`，或设置环境变量 `GITGRAPH_THEME=名字`。
 
   | 主题 | 效果 |
   |---|---|
